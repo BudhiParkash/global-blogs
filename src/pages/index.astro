@@ -50,7 +50,7 @@ const latestPosts = posts?.slice(1) ?? [];
 
 	{featuredPost && (
 		<section class="featured-story">
-			<a class="featured-card" href={`/blog/${featuredPost.slug}`}>
+			<a class="featured-card" href={`/${featuredPost.slug}`}>
 				<div class="featured-content">
 					<p class="eyebrow">Featured story</p>
 					<span class="story-tag">{featuredPost.categories?.name ?? 'Latest'}</span>
@@ -80,7 +80,7 @@ const latestPosts = posts?.slice(1) ?? [];
 		<div class="story-grid">
 			{latestPosts.map((post) => (
 				<article class="story-card">
-					<a href={`/blog/${post.slug}`}>
+					<a href={`/${post.slug}`}>
 						{post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
 						<div class="story-card-body">
 							<span class="story-tag">{post.categories?.name ?? 'Story'}</span>
