@@ -1,0 +1,29 @@
+---
+// src/layouts/Layout.astro
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = 'GlobalBlogs for travel, auto, beauty, and lifestyle stories.' } =
+	Astro.props;
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		{import.meta.env.SUPABASE_URL && <link rel="preconnect" href={import.meta.env.SUPABASE_URL} />}
+		<meta name="robots" content="index, follow, max-image-preview:large" />
+		<BaseHead title={title} description={description} />
+	</head>
+	<body>
+		<Header />
+		<main class="site-main">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

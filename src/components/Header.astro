@@ -1,0 +1,106 @@
+---
+import { SITE_CATEGORIES, SITE_TAGLINE, SITE_TITLE } from '../consts';
+import HeaderLink from './HeaderLink.astro';
+---
+
+<header class="site-header">
+	<div class="shell header-shell">
+		<div class="brand-block">
+			<a class="brand-mark" href="/" aria-label={`${SITE_TITLE} home`}>
+				<span class="brand-kicker">Editorial</span>
+				<strong>{SITE_TITLE}</strong>
+			</a>
+			<p>{SITE_TAGLINE}</p>
+		</div>
+
+		<nav class="main-nav" aria-label="Primary">
+			<HeaderLink href="/">Home</HeaderLink>
+			{SITE_CATEGORIES.map((item) => (
+				<HeaderLink href={item.href}>{item.label}</HeaderLink>
+			))}
+			<HeaderLink href="/about">About</HeaderLink>
+		</nav>
+	</div>
+</header>
+<style>
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background: rgba(248, 243, 236, 0.88);
+		backdrop-filter: blur(16px);
+		border-bottom: 1px solid var(--line);
+	}
+
+	.header-shell {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		padding-top: 1rem;
+		padding-bottom: 1rem;
+	}
+
+	.brand-block {
+		display: grid;
+		gap: 0.4rem;
+	}
+
+	.brand-mark {
+		display: inline-flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		text-decoration: none;
+		color: var(--ink-strong);
+	}
+
+	.brand-kicker {
+		font-size: 0.72rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+
+	.brand-mark strong {
+		font-size: clamp(1.2rem, 2vw, 1.7rem);
+		line-height: 1;
+	}
+
+	.brand-block p {
+		margin: 0;
+		max-width: 32rem;
+		font-size: 0.92rem;
+		line-height: 1.5;
+		color: var(--muted);
+	}
+
+	.main-nav {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.45rem;
+	}
+
+	@media (max-width: 920px) {
+		.header-shell {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+
+		.main-nav {
+			justify-content: flex-start;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.site-header {
+			position: static;
+		}
+
+		.header-shell {
+			padding-top: 0.85rem;
+			padding-bottom: 0.85rem;
+		}
+	}
+</style>

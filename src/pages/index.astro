@@ -1,0 +1,320 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { createClient } from '@supabase/supabase-js';
+import { SITE_CATEGORIES } from '../consts';
+
+const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY);
+
+const { data: posts } = await supabase
+  .from('posts')
+  .select('*, categories(name)')
+  .eq('is_published', true)
+  .order('published_at', { ascending: false })
+  .limit(6);
+
+const featuredPost = posts?.[0];
+const latestPosts = posts?.slice(1) ?? [];
+---
+
+<Layout
+	title="GlobalBlogs | Travel, Auto, Beauty and Lifestyle Stories"
+	description="Browse fresh stories across travel, auto, beauty, and lifestyle with a cleaner editorial experience built for discovery."
+>
+	<section class="hero">
+		<div class="hero-copy">
+			<p class="eyebrow">Editorial blog platform</p>
+			<h1>Readable stories designed for discovery, not clutter.</h1>
+			<p class="hero-text">
+				GlobalBlogs organizes category-driven stories across travel, auto, beauty, and modern
+				lifestyle with a cleaner reading experience.
+			</p>
+			<div class="hero-actions">
+				<a class="button-primary" href="#latest">Read latest</a>
+				<a class="button-secondary" href="/about">About the site</a>
+			</div>
+		</div>
+
+		<div class="hero-panel">
+			<p class="panel-label">Browse categories</p>
+			<div class="category-pills">
+				{SITE_CATEGORIES.map((item) => (
+					<a href={item.href}>{item.label}</a>
+				))}
+			</div>
+			<p class="panel-copy">
+				Each section keeps the archive focused, easier to scan, and stronger for search-led
+				discovery.
+			</p>
+		</div>
+	</section>
+
+	{featuredPost && (
+		<section class="featured-story">
+			<a class="featured-card" href={`/blog/${featuredPost.slug}`}>
+				<div class="featured-content">
+					<p class="eyebrow">Featured story</p>
+					<span class="story-tag">{featuredPost.categories?.name ?? 'Latest'}</span>
+					<h2>{featuredPost.title}</h2>
+					<p>
+						{featuredPost.excerpt ??
+							'Explore the latest article from the newsroom with a full-width lead layout built for engagement.'}
+					</p>
+				</div>
+
+				{featuredPost.hero_image && (
+					<img src={featuredPost.hero_image} alt={featuredPost.title} loading="eager" />
+				)}
+			</a>
+		</section>
+	)}
+
+	<section class="latest-section" id="latest">
+		<div class="section-heading">
+			<div>
+				<p class="eyebrow">Latest posts</p>
+				<h2>Recent stories across every category</h2>
+			</div>
+			<p>Clear cards, stronger hierarchy, and faster content scanning for readers.</p>
+		</div>
+
+		<div class="story-grid">
+			{latestPosts.map((post) => (
+				<article class="story-card">
+					<a href={`/blog/${post.slug}`}>
+						{post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
+						<div class="story-card-body">
+							<span class="story-tag">{post.categories?.name ?? 'Story'}</span>
+							<h3>{post.title}</h3>
+							<p>
+								{post.excerpt ??
+									'Open the full article for a cleaner reading layout and category-based navigation.'}
+							</p>
+						</div>
+					</a>
+				</article>
+			))}
+		</div>
+
+		{!posts?.length && (
+			<div class="empty-state">
+				<h3>No published posts yet</h3>
+				<p>Once posts are available in Supabase, they will appear here automatically.</p>
+			</div>
+		)}
+	</section>
+</Layout>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+		gap: 1.5rem;
+		align-items: stretch;
+		padding: 1rem 0 2rem;
+	}
+
+	.hero-copy,
+	.hero-panel,
+	.featured-card,
+	.story-card a,
+	.empty-state {
+		border: 1px solid var(--line);
+		background: var(--card);
+		box-shadow: var(--shadow-tight);
+	}
+
+	.hero-copy {
+		padding: clamp(1.5rem, 4vw, 3rem);
+		border-radius: var(--radius-xl);
+	}
+
+	.hero-text {
+		max-width: 46rem;
+		font-size: 1.08rem;
+		color: var(--muted);
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.8rem;
+		margin-top: 1.5rem;
+	}
+
+	.button-primary,
+	.button-secondary,
+	.category-pills a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		border-radius: 999px;
+	}
+
+	.button-primary,
+	.button-secondary {
+		padding: 0.82rem 1.2rem;
+	}
+
+	.button-primary {
+		background: var(--ink-strong);
+		color: #fff7ef;
+	}
+
+	.button-primary:hover {
+		color: #fff7ef;
+		transform: translateY(-1px);
+	}
+
+	.button-secondary {
+		border: 1px solid var(--line);
+		color: var(--ink-strong);
+		background: rgba(255, 255, 255, 0.55);
+	}
+
+	.hero-panel {
+		border-radius: var(--radius-xl);
+		padding: 1.5rem;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(239, 228, 213, 0.95));
+	}
+
+	.panel-label,
+	.panel-copy,
+	.section-heading p,
+	.story-card-body p,
+	.featured-content p,
+	.empty-state p {
+		color: var(--muted);
+	}
+
+	.panel-label {
+		margin-bottom: 1rem;
+		font-size: 0.78rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+	}
+
+	.category-pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.category-pills a {
+		padding: 0.75rem 1rem;
+		background: rgba(255, 255, 255, 0.78);
+		color: var(--ink-strong);
+		border: 1px solid rgba(68, 52, 39, 0.09);
+	}
+
+	.featured-story,
+	.latest-section {
+		margin-top: 1.5rem;
+	}
+
+	.featured-card {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(280px, 0.95fr);
+		gap: 1.4rem;
+		padding: 1.25rem;
+		border-radius: var(--radius-xl);
+		text-decoration: none;
+	}
+
+	.featured-content {
+		padding: 0.6rem;
+	}
+
+	.featured-card img {
+		width: 100%;
+		height: 100%;
+		min-height: 320px;
+		object-fit: cover;
+		border-radius: calc(var(--radius-xl) - 10px);
+	}
+
+	.eyebrow,
+	.story-tag {
+		font-size: 0.78rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.eyebrow {
+		margin-bottom: 1rem;
+		color: var(--accent);
+	}
+
+	.story-tag {
+		display: inline-block;
+		margin-bottom: 0.8rem;
+		color: var(--accent-strong);
+	}
+
+	.section-heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.section-heading p {
+		max-width: 34rem;
+		margin: 0;
+	}
+
+	.story-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1.2rem;
+	}
+
+	.story-card a {
+		display: block;
+		height: 100%;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		text-decoration: none;
+	}
+
+	.story-card a:hover,
+	.featured-card:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow);
+	}
+
+	.story-card img {
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+	}
+
+	.story-card-body {
+		padding: 1.2rem;
+	}
+
+	.story-card-body h3 {
+		font-size: 1.35rem;
+	}
+
+	.empty-state {
+		padding: 2rem;
+		border-radius: var(--radius-lg);
+		text-align: center;
+	}
+
+	@media (max-width: 960px) {
+		.hero,
+		.featured-card,
+		.story-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.section-heading {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+	}
+</style>

@@ -1,0 +1,143 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { createClient } from '@supabase/supabase-js';
+
+export async function getStaticPaths() {
+  const supabase = createClient(
+    import.meta.env.SUPABASE_URL, 
+    import.meta.env.SUPABASE_ANON_KEY
+  );
+  
+  // 1. Fetch all categories to create the paths
+  const { data: categories } = await supabase.from('categories').select('slug');
+
+  return categories?.map((cat) => ({
+    params: { category: cat.slug },
+    props: { categorySlug: cat.slug }
+  })) || [];
+}
+
+const { category } = Astro.params;
+const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY);
+
+const { data: posts } = await supabase
+  .from('posts')
+  .select('*, categories!inner(slug, name)')
+  .eq('categories.slug', category)
+  .eq('is_published', true)
+  .order('published_at', { ascending: false });
+---
+
+<Layout
+  title={`${category} Stories | GlobalBlogs`}
+  description={`Browse the latest ${category} stories on GlobalBlogs.`}
+>
+  <section class="category-hero">
+    <p class="eyebrow">Category archive</p>
+    <h1>{category} stories</h1>
+    <p>
+      A focused archive for readers who want to browse {category} content without distraction.
+    </p>
+  </section>
+
+  <section class="category-grid">
+    {posts?.length ? posts.map((post) => (
+      <article class="category-card">
+        <a href={`/${post.slug}`}>
+          {post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
+          <div class="category-card-body">
+            <span>{post.categories?.name ?? category}</span>
+            <h2>{post.title}</h2>
+          </div>
+        </a>
+      </article>
+    )) : (
+      <div class="empty-state">
+        <h2>No posts found</h2>
+        <p>This category is ready, but there are no published stories in it yet.</p>
+      </div>
+    )}
+  </section>
+</Layout>
+
+<style>
+  .category-hero {
+    margin-bottom: 1.8rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .eyebrow,
+  .category-hero p,
+  .empty-state p {
+    color: var(--muted);
+  }
+
+  .eyebrow,
+  .category-card-body span {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .eyebrow {
+    color: var(--accent);
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .category-card a,
+  .empty-state {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .category-card a:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .category-card img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .category-card-body {
+    padding: 1.2rem;
+  }
+
+  .category-card-body span {
+    color: var(--accent-strong);
+  }
+
+  .category-card-body h2 {
+    margin-top: 0.7rem;
+    font-size: 1.45rem;
+  }
+
+  .empty-state {
+    padding: 2rem;
+    text-align: center;
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 860px) {
+    .category-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

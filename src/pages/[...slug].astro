@@ -1,0 +1,139 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.SUPABASE_URL,
+  import.meta.env.SUPABASE_ANON_KEY
+);
+
+export async function getStaticPaths() {
+  const supabase = createClient(
+    import.meta.env.SUPABASE_URL,
+    import.meta.env.SUPABASE_ANON_KEY
+  );
+  
+  const { data: posts } = await supabase.from('posts').select('slug').eq('is_published', true);
+  
+  return posts?.map((post) => {
+    // SECURITY CHECK: 
+    // If a slug is "category" or "about", it might break the site.
+    // Ensure your blog slugs in Supabase don't use these names.
+    return {
+      params: { slug: post.slug },
+      props: { post },
+    };
+  }) || [];
+}
+
+const { slug } = Astro.params;
+const { data: post } = await supabase
+  .from('posts')
+  .select('*, categories(name)')
+  .eq('slug', slug)
+  .single();
+
+if (!post) return Astro.redirect('/404');
+---
+
+<Layout
+  title={`${post.title} | GlobalBlogs`}
+  description={post.excerpt ?? `Read ${post.title} on GlobalBlogs.`}
+>
+  <article class="article-shell">
+    <nav class="article-back">
+      <a href="/">Back to home</a>
+    </nav>
+
+    <header class="article-header">
+      <span class="article-tag">{post.categories?.name ?? 'Story'}</span>
+      <h1>{post.title}</h1>
+      <p class="article-meta">
+        {post.published_at && new Date(post.published_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </p>
+    </header>
+
+    {post.hero_image && (
+      <img class="article-image" src={post.hero_image} alt={post.title} loading="eager" />
+    )}
+
+    <section class="article-body">
+      <Fragment set:html={post.content} />
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .article-shell {
+    width: min(860px, 100%);
+    margin: 0 auto;
+  }
+
+  .article-back {
+    margin-bottom: 1rem;
+  }
+
+  .article-back a {
+    text-decoration: none;
+    color: var(--muted);
+  }
+
+  .article-header {
+    margin-bottom: 1.8rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .article-tag {
+    display: inline-block;
+    margin-bottom: 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+
+  .article-meta {
+    margin: 1rem 0 0;
+    color: var(--muted);
+  }
+
+  .article-image {
+    width: 100%;
+    max-height: 580px;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.8rem;
+  }
+
+  .article-body {
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: rgba(255, 253, 248, 0.94);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .article-body :global(p) {
+    margin-bottom: 1.3rem;
+  }
+
+  .article-body :global(h2),
+  .article-body :global(h3),
+  .article-body :global(h4) {
+    margin-top: 2rem;
+  }
+
+  .article-body :global(img) {
+    margin: 2rem 0;
+    border-radius: var(--radius-lg);
+  }
+</style>
