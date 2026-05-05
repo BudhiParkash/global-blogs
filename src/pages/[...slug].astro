@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
+import { Image } from 'astro:assets';
 
 const supabase = createClient(
   import.meta.env.SUPABASE_URL,
@@ -39,6 +40,8 @@ if (!post) return Astro.redirect('/404');
 <Layout
   title={`${post.title} | GlobalsBlog`}
   description={post.excerpt ?? `Read ${post.title} on GlobalsBlog.`}
+  image={post.hero_image}
+  
 >
   <article class="article-shell">
     <nav class="article-back">
@@ -58,7 +61,17 @@ if (!post) return Astro.redirect('/404');
     </header>
 
     {post.hero_image && (
-      <img class="article-image" src={post.hero_image} alt={post.title} loading="eager" />
+      <Image 
+  src={post.hero_image} 
+  width={1200} 
+  height={675} 
+  widths={[400, 800, 1200]}
+  sizes="(max-width: 800px) 100vw, 1200px"
+  alt={post.title}
+  loading="eager" 
+  fetchpriority="high"
+  class="w-full rounded-3xl shadow-2xl mb-12"
+/>
     )}
 
     <section class="article-body">

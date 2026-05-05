@@ -1,29 +1,47 @@
 ---
 // src/layouts/Layout.astro
-interface Props {
-	title: string;
-	description?: string;
-}
-
-const { title, description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.' } =
-	Astro.props;
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+
+interface Props {
+    title: string;
+    description?: string;
+    image?: string; 
+}
+
+const { 
+    title, 
+    description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.', 
+    image 
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		{import.meta.env.SUPABASE_URL && <link rel="preconnect" href={import.meta.env.SUPABASE_URL} />}
-		<meta name="robots" content="index, follow, max-image-preview:large" />
-		<BaseHead title={title} description={description} />
-	</head>
-	<body>
-		<Header />
-		<main class="site-main">
-			<slot />
-		</main>
-		<Footer />
-	</body>
+    <head>
+        {import.meta.env.SUPABASE_URL && <link rel="preconnect" href={import.meta.env.SUPABASE_URL} />}
+
+        {image && (
+          <link 
+            rel="preload" 
+            as="image" 
+            href={image} 
+            imagesrcset={`${image}?w=400 400w, ${image}?w=800 800w, ${image}?w=1200 1200w`}
+            imagesizes="(max-width: 800px) 100vw, 1200px"
+          />
+        )}
+
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+        
+        <!-- FIX: Pass the 'image' prop here so BaseHead can use it for OG/Twitter -->
+        <BaseHead title={title} description={description} image={image} />
+    </head>
+    <body>
+        <Header />
+        <main class="site-main">
+            <slot />
+        </main>
+        <Footer />
+    </body>
 </html>

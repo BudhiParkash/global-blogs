@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
 import { SITE_CATEGORIES } from '../consts';
+import { Image } from 'astro:assets';
 
 const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY);
 
