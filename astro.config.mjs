@@ -16,7 +16,16 @@ const site =
 
 export default defineConfig({
   site,
-  integrations: [mdx(), sitemap(), partytown()],
+  integrations: [
+    mdx(), 
+    sitemap(), 
+    // UPDATED: Added configuration to partytown
+    partytown({
+      config: {
+        forward: ['gtag', 'dataLayer.push'],
+      },
+    }),
+  ],
 
   fonts: [
       {
@@ -41,7 +50,7 @@ export default defineConfig({
               ],
           },
       },
-	],
+    ],
 
   vite: {
     plugins: [tailwindcss()],
