@@ -1,6 +1,6 @@
-export const SITE_TITLE = 'GlobalBlogs';
+export const SITE_TITLE = 'Globals Blog';
 export const SITE_DESCRIPTION =
-	'GlobalBlogs publishes travel, auto, beauty, and lifestyle stories with a clean reading experience and category-led discovery.';
+	'GlobalsBlog publishes travel, auto, beauty, and lifestyle stories with a clean reading experience and category-led discovery.';
 
 export const SITE_TAGLINE = 'Fresh stories across travel, auto, beauty, and modern living.';
 

@@ -12,7 +12,7 @@ const site =
   process.env.SITE_URL ||
   process.env.SITE ||
   process.env.URL ||
-  'https://example.com';
+  'https://globalsblog.com';
 
 export default defineConfig({
   site,
