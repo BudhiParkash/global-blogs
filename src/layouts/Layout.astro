@@ -8,12 +8,17 @@ interface Props {
     title: string;
     description?: string;
     image?: string; 
+
+    articleDate?: string;
+    authorName?: string;
+    authorUrl?: string;
 }
 
 const { 
     title, 
     description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.', 
-    image 
+    image ,
+    articleDate, authorName, authorUrl
 } = Astro.props;
 ---
 
@@ -35,7 +40,10 @@ const {
         <meta name="robots" content="index, follow, max-image-preview:large" />
         
         <!-- FIX: Pass the 'image' prop here so BaseHead can use it for OG/Twitter -->
-        <BaseHead title={title} description={description} image={image} />
+        <BaseHead title={title} description={description} image={image} articleDate={articleDate}
+            authorName={authorName}
+            authorUrl={authorUrl}
+            isArticle={!!articleDate} />
     </head>
     <body>
         <Header />
