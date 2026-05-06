@@ -8,7 +8,6 @@ export async function getStaticPaths() {
     import.meta.env.SUPABASE_ANON_KEY
   );
   
-  // 1. Fetch all categories to create the paths
   const { data: categories } = await supabase.from('categories').select('slug');
 
   return categories?.map((cat) => ({
@@ -26,27 +25,31 @@ const { data: posts } = await supabase
   .eq('categories.slug', category)
   .eq('is_published', true)
   .order('published_at', { ascending: false });
+
+// Get the display name for the category from the first post, or fallback to the slug
+const categoryDisplayName = posts?.[0]?.categories?.name || category;
 ---
 
 <Layout
-  title={`${category} Stories | GlobalsBlog`}
-  description={`Browse the latest ${category} stories on GlobalsBlog.`}
+  title={`${categoryDisplayName} Stories | GlobalsBlog`}
+  description={`Browse the latest ${categoryDisplayName} stories on GlobalsBlog.`}
 >
   <section class="category-hero">
     <p class="eyebrow">Category archive</p>
-    <h1>{category} stories</h1>
+    <h1>{categoryDisplayName} stories</h1>
     <p>
-      A focused archive for readers who want to browse {category} content without distraction.
+      A focused archive for readers who want to browse {categoryDisplayName} content without distraction.
     </p>
   </section>
 
   <section class="category-grid">
     {posts?.length ? posts.map((post) => (
       <article class="category-card">
-        <a href={`/${post.slug}`}>
+        {/* FIX: Link now includes the category parameter */}
+        <a href={`/${category}/${post.slug}`}>
           {post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
           <div class="category-card-body">
-            <span>{post.categories?.name ?? category}</span>
+            <span>{post.categories?.name ?? categoryDisplayName}</span>
             <h2>{post.title}</h2>
           </div>
         </a>

@@ -15,94 +15,111 @@ const { data: posts } = await supabase
 
 const featuredPost = posts?.[0];
 const latestPosts = posts?.slice(1) ?? [];
+
+// Define the shape of your data
+interface Post {
+  slug: string;
+  categories: { name: string } | { name: string }[];
+}
+
+// Helper function to generate URLs consistently
+const getPostUrl = (post: Post) => {
+    const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+    const categorySlug = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+    return `/${categorySlug}/${post.slug}`;
+};
 ---
 
 <Layout
-	title="GlobalsBlog | Travel, Auto, Beauty and Lifestyle Stories"
-	description="Browse fresh stories across travel, auto, beauty, and lifestyle with a cleaner editorial experience built for discovery."
+    title="GlobalsBlog | Travel, Auto, Beauty and Lifestyle Stories"
+    description="Browse fresh stories across travel, auto, beauty, and lifestyle with a cleaner editorial experience built for discovery."
 >
-	<section class="hero">
-		<div class="hero-copy">
-			<p class="eyebrow">Editorial blog platform</p>
-			<h1>Readable stories designed for discovery, not clutter.</h1>
-			<p class="hero-text">
-				GlobalsBlog organizes category-driven stories across travel, auto, beauty, and modern
-				lifestyle with a cleaner reading experience.
-			</p>
-			<div class="hero-actions">
-				<a class="button-primary" href="#latest">Read latest</a>
-				<a class="button-secondary" href="/about">About the site</a>
-			</div>
-		</div>
+    <!-- HERO SECTION (Remains same) -->
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">Editorial blog platform</p>
+            <h1>Readable stories designed for discovery, not clutter.</h1>
+            <p class="hero-text">
+                GlobalsBlog organizes category-driven stories across travel, auto, beauty, and modern
+                lifestyle with a cleaner reading experience.
+            </p>
+            <div class="hero-actions">
+                <a class="button-primary" href="#latest">Read latest</a>
+                <a class="button-secondary" href="/about">About the site</a>
+            </div>
+        </div>
 
-		<div class="hero-panel">
-			<p class="panel-label">Browse categories</p>
-			<div class="category-pills">
-				{SITE_CATEGORIES.map((item) => (
-					<a href={item.href}>{item.label}</a>
-				))}
-			</div>
-			<p class="panel-copy">
-				Each section keeps the archive focused, easier to scan, and stronger for search-led
-				discovery.
-			</p>
-		</div>
-	</section>
+        <div class="hero-panel">
+            <p class="panel-label">Browse categories</p>
+            <div class="category-pills">
+                {SITE_CATEGORIES.map((item) => (
+                    <a href={item.href}>{item.label}</a>
+                ))}
+            </div>
+            <p class="panel-copy">
+                Each section keeps the archive focused, easier to scan, and stronger for search-led discovery.
+            </p>
+        </div>
+    </section>
 
-	{featuredPost && (
-		<section class="featured-story">
-			<a class="featured-card" href={`/${featuredPost.slug}`}>
-				<div class="featured-content">
-					<p class="eyebrow">Featured story</p>
-					<span class="story-tag">{featuredPost.categories?.name ?? 'Latest'}</span>
-					<h2>{featuredPost.title}</h2>
-					<p>
-						{featuredPost.excerpt ??
-							'Explore the latest article from the newsroom with a full-width lead layout built for engagement.'}
-					</p>
-				</div>
+    {featuredPost && (
+        <section class="featured-story">
+            <!-- FIX 1: Updated Featured Post Link -->
+            <a class="featured-card" href={getPostUrl(featuredPost)}>
+                <div class="featured-content">
+                    <p class="eyebrow">Featured story</p>
+                    <span class="story-tag">{featuredPost.categories?.name ?? 'Latest'}</span>
+                    <h2>{featuredPost.title}</h2>
+                    <p>
+                        {featuredPost.excerpt ??
+                            'Explore the latest article from the newsroom with a full-width lead layout built for engagement.'}
+                    </p>
+                </div>
 
-				{featuredPost.hero_image && (
-					<img src={featuredPost.hero_image} alt={featuredPost.title} loading="eager" />
-				)}
-			</a>
-		</section>
-	)}
+                {featuredPost.hero_image && (
+                    <img src={featuredPost.hero_image} alt={featuredPost.title} loading="eager" />
+                )}
+            </a>
+        </section>
+    )}
 
-	<section class="latest-section" id="latest">
-		<div class="section-heading">
-			<div>
-				<p class="eyebrow">Latest posts</p>
-				<h2>Recent stories across every category</h2>
-			</div>
-			<p>Clear cards, stronger hierarchy, and faster content scanning for readers.</p>
-		</div>
+    <section class="latest-section" id="latest">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Latest posts</p>
+                <h2>Recent stories across every category</h2>
+            </div>
+            <p>Clear cards, stronger hierarchy, and faster content scanning for readers.</p>
+        </div>
 
-		<div class="story-grid">
-			{latestPosts.map((post) => (
-				<article class="story-card">
-					<a href={`/${post.slug}`}>
-						{post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
-						<div class="story-card-body">
-							<span class="story-tag">{post.categories?.name ?? 'Story'}</span>
-							<h3>{post.title}</h3>
-							<p>
-								{post.excerpt ??
-									'Open the full article for a cleaner reading layout and category-based navigation.'}
-							</p>
-						</div>
-					</a>
-				</article>
-			))}
-		</div>
+        <div class="story-grid">
+            {latestPosts.map((post) => {
+                // FIX 2: Added 'return' statement inside map
+                return (
+                    <article class="story-card">
+                        <a href={getPostUrl(post)}>
+                            {post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
+                            <div class="story-card-body">
+                                <span class="story-tag">{post.categories?.name ?? 'Story'}</span>
+                                <h3>{post.title}</h3>
+                                <p>
+                                    {post.excerpt ??
+                                        'Open the full article for a cleaner reading layout and category-based navigation.'}
+                                </p>
+                            </div>
+                        </a>
+                    </article>
+                );
+            })}
+        </div>
 
-		{!posts?.length && (
-			<div class="empty-state">
-				<h3>No published posts yet</h3>
-				<p>Once posts are available in Supabase, they will appear here automatically.</p>
-			</div>
-		)}
-	</section>
+        {!posts?.length && (
+            <div class="empty-state">
+                <h3>No published posts yet</h3>
+                <p>Once posts are available in Supabase, they will appear here automatically.</p>
+            </div>
+        )}
+    </section>
 </Layout>
 
 <style>

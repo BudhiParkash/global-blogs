@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    {
+      "source": "/makeup-in-ten-minutes",
+      "destination": "/beauty/makeup-ten-minutes",
+      "permanent": true
+    },
+    {
+      "source": "/best-budget-road-trips-from-mumbai-in-2026",
+      "destination": "/travel/budget-road-trips-mumbai-2026",
+      "permanent": true
+    },
+    {
+      "source": "/is-2026-the-year-evs-become-cheaper-than-petrol",
+      "destination": "/auto/evs-cheaper-than-petrol-2026",
+      "permanent": true
+    }
+  ]
+}

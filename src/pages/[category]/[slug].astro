@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
 import { Image } from 'astro:assets';
 
@@ -14,11 +14,22 @@ export async function getStaticPaths() {
     import.meta.env.SUPABASE_ANON_KEY
   );
   
-  const { data: posts } = await supabase.from('posts').select('slug').eq('is_published', true);
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('slug, categories(name)')
+    .eq('is_published', true);
   
   return posts?.map((post) => {
+    // FIX: Access the first element of the categories array
+    // Supabase returns nested joins as arrays unless specified otherwise
+    const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+    const categoryParam = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+    
     return {
-      params: { slug: post.slug },
+      params: { 
+        category: categoryParam, 
+        slug: post.slug 
+      },
       props: { post },
     };
   }) || [];
@@ -26,7 +37,7 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 
-// UPDATED QUERY: Fetching post data along with nested author details
+// Fetch full post data with author and category details
 const { data: post } = await supabase
   .from('posts')
   .select(`
@@ -44,6 +55,10 @@ const { data: post } = await supabase
   .single();
 
 if (!post) return Astro.redirect('/404');
+
+const categoryName = post.categories?.name || 'Lifestyle';
+
+
 ---
 
 <Layout
@@ -53,6 +68,8 @@ if (!post) return Astro.redirect('/404');
   articleDate={post.published_at}
   authorName={post.author?.name}
   authorUrl={post.author?.handle_link}
+  category={categoryName}
+  isArticle={true}
 >
   <article class="article-shell">
     <nav class="article-back">
@@ -89,7 +106,6 @@ if (!post) return Astro.redirect('/404');
       <Fragment set:html={post.content} />
     </section>
 
-    <!-- NEW: Author Profile UI -->
     {post.author && (
       <footer class="author-card">
         <div class="author-content">
@@ -100,7 +116,7 @@ if (!post) return Astro.redirect('/404');
             <p>{post.author.bio}</p>
             {post.author.handle_link && (
               <a href={`${post.author.handle_link}`} class="author-link" target="_blank">
-                Follow on {post.author.twitter_handle}
+                Follow on {post.author.twitter_handle || 'Social'}
               </a>
             )}
           </div>
@@ -181,7 +197,6 @@ if (!post) return Astro.redirect('/404');
     font-size: 1.15rem;
   }
 
-  /* Author Card Styling */
   .author-card {
     margin-top: 4rem;
     padding: 2.5rem;
@@ -262,7 +277,6 @@ if (!post) return Astro.redirect('/404');
     }
   }
 
-  /* Typography Polish */
   .article-body :global(h2) { font-size: 2rem; margin-top: 3rem; }
   .article-body :global(p) { margin-bottom: 1.5rem; }
   .article-body :global(img) { border-radius: var(--radius-lg); margin: 3rem 0; }
