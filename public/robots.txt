@@ -1,0 +1,10 @@
+# Allow all crawlers to access the site
+User-agent: *
+Allow: /
+
+# Block search engines from crawling your internal API or search results (if any)
+Disallow: /api/
+Disallow: /search
+
+# Link to your sitemap to help bots find your new hierarchical URLs
+Sitemap: https://globalsblog.com/sitemap-index.xml
