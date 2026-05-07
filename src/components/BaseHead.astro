@@ -19,7 +19,9 @@ const { title, description, image ,articleDate,
     authorUrl, 
     category,
     isArticle = false } = Astro.props;
-const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : Astro.url;
+//const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : Astro.url;
+
+const canonicalURL = new URL(Astro.url.pathname.replace(/\/$/, ""), Astro.site || Astro.url);
 
 // Logic: Use the provided image, or a default fallback if the post doesn't have one
 const socialImage = image ? image : '/blog-placeholder-social.jpg'; 

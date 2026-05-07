@@ -16,6 +16,7 @@ const site =
 
 export default defineConfig({
   site,
+  trailingSlash: 'never',
   integrations: [
     mdx(), 
     sitemap(), 
