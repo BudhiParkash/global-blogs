@@ -149,6 +149,96 @@ ol {
 	background: rgba(182, 91, 46, 0.18);
 }
 
+.eyebrow {
+	margin-bottom: 0.75rem;
+	font-size: 0.78rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.content-page {
+	display: grid;
+	gap: 1.5rem;
+	padding-bottom: 1rem;
+}
+
+.content-hero,
+.content-card,
+.info-card,
+.contact-strip {
+	border: 1px solid var(--line);
+	border-radius: var(--radius-xl);
+	background: var(--card);
+	box-shadow: var(--shadow-tight);
+}
+
+.content-hero {
+	padding: clamp(1.6rem, 4vw, 3rem);
+	background:
+		radial-gradient(circle at top right, rgba(182, 91, 46, 0.12), transparent 20rem),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 252, 246, 0.96));
+}
+
+.content-hero .lede,
+.content-card p,
+.content-card li,
+.info-card p,
+.info-card li,
+.contact-strip p {
+	color: var(--muted);
+}
+
+.content-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.9fr);
+	gap: 1.5rem;
+}
+
+.content-card,
+.info-card {
+	padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+.content-card-accent {
+	background:
+		radial-gradient(circle at top left, rgba(210, 124, 67, 0.12), transparent 18rem),
+		rgba(255, 253, 248, 0.95);
+}
+
+.content-list,
+.detail-list {
+	margin: 1rem 0 0;
+	padding-left: 1.2rem;
+}
+
+.contact-strip {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+	padding: 1.25rem;
+}
+
+.contact-strip strong {
+	display: block;
+	margin-bottom: 0.35rem;
+	color: var(--ink-strong);
+}
+
+.info-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+	.content-grid,
+	.info-grid,
+	.contact-strip {
+		grid-template-columns: 1fr;
+	}
+}
+
 @media (max-width: 720px) {
 	body {
 		font-size: 18px;

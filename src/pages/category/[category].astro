@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
+import { SITE_CATEGORIES } from '../../consts';
 
 export async function getStaticPaths() {
   const supabase = createClient(
@@ -10,10 +11,13 @@ export async function getStaticPaths() {
   
   const { data: categories } = await supabase.from('categories').select('slug');
 
-  return categories?.map((cat) => ({
-    params: { category: cat.slug },
-    props: { categorySlug: cat.slug }
-  })) || [];
+  const defaultSlugs = SITE_CATEGORIES.map((item) => item.href.replace('/category/', ''));
+  const categorySlugs = [...new Set([...(categories?.map((cat) => cat.slug) ?? []), ...defaultSlugs])];
+
+  return categorySlugs.map((slug) => ({
+    params: { category: slug },
+    props: { categorySlug: slug }
+  }));
 }
 
 const { category } = Astro.params;
@@ -27,7 +31,9 @@ const { data: posts } = await supabase
   .order('published_at', { ascending: false });
 
 // Get the display name for the category from the first post, or fallback to the slug
-const categoryDisplayName = posts?.[0]?.categories?.name || category;
+const categoryDisplayName =
+  posts?.[0]?.categories?.name ||
+  category.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 ---
 
 <Layout

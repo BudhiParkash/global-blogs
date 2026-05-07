@@ -4,42 +4,42 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout
 	title="About GlobalsBlog"
-	description="Learn what GlobalsBlog publishes and how the site is structured for better reading and discovery."
+	description="Learn what GlobalsBlog publishes, the categories it covers, and how the site is structured for better reading and discovery."
 >
-	<section class="about-wrap">
-		<p class="eyebrow">About the publication</p>
-		<h1>GlobalsBlog is built for cleaner reading and stronger category discovery.</h1>
-		<p>
-			The site focuses on travel, auto, beauty, and adjacent lifestyle coverage. The goal is
-			simple: publish stories in a layout that feels editorial, easy to scan, and easier to
-			share across search and social platforms.
-		</p>
-		<p>
-			Instead of burying articles under noisy navigation, the experience now centers category
-			pages, recent story cards, and a more structured reading flow for each article.
-		</p>
+	<section class="content-page">
+		<div class="content-hero">
+			<p class="eyebrow">About the publication</p>
+			<h1>GlobalsBlog covers practical stories across travel, beauty, auto, and news.</h1>
+			<p class="lede">
+				The site is designed as a readable editorial platform where visitors can quickly discover
+				fresh articles, browse category archives, and find clear information about the business
+				behind the publication.
+			</p>
+		</div>
+
+		<div class="content-grid">
+			<article class="content-card">
+				<h2>What we publish</h2>
+				<p>
+					GlobalsBlog features destination ideas, beauty tips, auto updates, and general news-led
+					stories for readers who want useful, easy-to-read content in one place.
+				</p>
+				<ul class="content-list">
+					<li>Travel guides, ideas, and destination-focused articles</li>
+					<li>Beauty tips, routines, and product-led explainers</li>
+					<li>Auto stories covering cars, trends, and ownership topics</li>
+					<li>News and timely updates relevant to a broad online audience</li>
+				</ul>
+			</article>
+
+			<aside class="content-card content-card-accent">
+				<h2>Why this site exists</h2>
+				<p>
+					The goal is straightforward: combine category clarity, strong readability, and
+					trust-building pages such as contact, privacy, and terms so readers and partners can
+					navigate the site with confidence.
+				</p>
+			</aside>
+		</div>
 	</section>
 </Layout>
-
-<style>
-	.about-wrap {
-		width: min(860px, 100%);
-		padding: clamp(1.5rem, 4vw, 2.5rem);
-		border: 1px solid var(--line);
-		border-radius: var(--radius-xl);
-		background: var(--card);
-		box-shadow: var(--shadow-tight);
-	}
-
-	.eyebrow,
-	.about-wrap p {
-		color: var(--muted);
-	}
-
-	.eyebrow {
-		font-size: 0.78rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: var(--accent);
-	}
-</style>
