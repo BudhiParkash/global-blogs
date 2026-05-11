@@ -34,11 +34,14 @@ const { data: posts } = await supabase
 const categoryDisplayName =
   posts?.[0]?.categories?.name ||
   category.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+
+const seoTitle = `${categoryDisplayName} Articles, Tips & Updates | GlobalsBlog`;
+const seoDescription = `Explore ${categoryDisplayName.toLowerCase()} articles, practical tips, news, and fresh updates on GlobalsBlog. Browse the latest stories in one focused archive.`;
 ---
 
 <Layout
-  title={`${categoryDisplayName} Stories | GlobalsBlog`}
-  description={`Browse the latest ${categoryDisplayName} stories on GlobalsBlog.`}
+  title={seoTitle}
+  description={seoDescription}
 >
   <section class="category-hero">
     <p class="eyebrow">Category archive</p>
