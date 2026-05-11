@@ -63,7 +63,7 @@ const categoryName = post.categories?.name || 'Lifestyle';
 
 <Layout
   title={`${post.title} | GlobalsBlog`}
-  description={post.excerpt ?? `Read ${post.title} on GlobalsBlog.`}
+  description={post.description ?? `Read ${post.title} on GlobalsBlog.`}
   image={post.hero_image}
   articleDate={post.published_at}
   authorName={post.author?.name}
@@ -129,12 +129,11 @@ const categoryName = post.categories?.name || 'Lifestyle';
 <style>
   .article-shell {
     width: min(860px, 100%);
-    margin: 2rem auto 5rem;
-    padding: 0 1rem;
+  
   }
 
   .article-back {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .article-back a {
@@ -149,7 +148,7 @@ const categoryName = post.categories?.name || 'Lifestyle';
   }
 
   .article-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     padding: clamp(1.5rem, 4vw, 2.5rem);
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
@@ -169,7 +168,7 @@ const categoryName = post.categories?.name || 'Lifestyle';
 
   .article-header h1 {
     font-size: clamp(2rem, 5vw, 3.5rem);
-    line-height: 1.1;
+    line-height: 1;
     margin: 0;
   }
 
@@ -188,7 +187,7 @@ const categoryName = post.categories?.name || 'Lifestyle';
   }
 
   .article-body {
-    padding: clamp(1.5rem, 5vw, 3rem);
+    /* padding: clamp(1.5rem, 5vw, 3rem); */
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
     background: rgba(255, 253, 248, 0.94);
@@ -277,7 +276,7 @@ const categoryName = post.categories?.name || 'Lifestyle';
     }
   }
 
-  .article-body :global(h2) { font-size: 2rem; margin-top: 3rem; }
+  .article-body :global(h2) { font-size: 2rem; margin-top: 1rem; }
   .article-body :global(p) { margin-bottom: 1.5rem; }
   .article-body :global(img) { border-radius: var(--radius-lg); margin: 3rem 0; }
 </style>

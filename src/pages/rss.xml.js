@@ -28,7 +28,7 @@ export async function GET(context) {
         pubDate: new Date(post.published_at),
         description: post.excerpt || post.description, // Use excerpt if available
         // 3. Update the link to follow the hierarchical structure
-        link: `/${categorySlug}/${post.slug}/`,
+        link: `/${categorySlug}/${post.slug}`,
         // 4. Optional: Add category to the RSS item metadata
         categories: [categoryData?.name || 'General'],
       };
