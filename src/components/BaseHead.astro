@@ -3,73 +3,121 @@ import '../styles/global.css';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 interface Props {
-    title: string;
-    description: string;
-    image?: string; // Changed from ImageMetadata to string
+  title: string;
+  description: string;
+  image?: string;
 
-    articleDate?: string;
-    authorName?: string;
-    authorUrl?: string;
-    category?: string;
-    isArticle?: boolean;
+  articleDate?: string;
+  authorName?: string;
+  authorUrl?: string;
+  category?: string;
+  isArticle?: boolean;
 }
 
-const { title, description, image ,articleDate, 
-    authorName, 
-    authorUrl, 
-    category,
-    isArticle = false } = Astro.props;
+const {
+  title,
+  description,
+  image,
+  articleDate,
+  authorName,
+  authorUrl,
+  category,
+  isArticle = false
+} = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname.replace(/\/$/, ""), Astro.site || Astro.url);
+// URLs
+const canonicalURL = new URL(
+  Astro.url.pathname.replace(/\/$/, ''),
+  Astro.site || Astro.url
+);
+
 const pageUrl = canonicalURL.toString();
 const siteUrl = new URL('/', Astro.site || Astro.url).toString();
 const pagePath = canonicalURL.pathname || '/';
+
+// Site Data
 const siteName = SITE_TITLE;
 const siteDescription = SITE_DESCRIPTION;
+
+// Schema IDs
 const organizationId = `${siteUrl}#organization`;
 const websiteId = `${siteUrl}#website`;
 const webpageId = `${pageUrl}#webpage`;
+
+// Author
 const authorSlug = authorName
-  ? authorName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  ? authorName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
   : null;
-const authorId = authorSlug ? `${siteUrl}authors/${authorSlug}#person` : null;
 
-// Logic: Use the provided image, or a default fallback if the post doesn't have one
-const socialImage = image ? image : '/blog-placeholder-social.jpg'; 
-const socialImageUrl = new URL(socialImage, Astro.site || Astro.url).toString();
+const authorId = authorSlug
+  ? `${siteUrl}authors/${authorSlug}#person`
+  : null;
 
-const pathSegments = pagePath.split('/').filter(Boolean);
+// Social Image
+const socialImage = image || '/blog-placeholder-social.jpg';
+
+const socialImageUrl = new URL(
+  socialImage,
+  Astro.site || Astro.url
+).toString();
+
+// Page Type
 const pageType =
-  pagePath === '/contact-us' ? 'ContactPage' :
-  pagePath === '/about' ? 'AboutPage' :
-  pagePath.startsWith('/category/') ? 'CollectionPage' :
-  isArticle ? 'ArticlePage' :
-  'WebPage';
+  pagePath === '/contact-us'
+    ? 'ContactPage'
+    : pagePath === '/about'
+    ? 'AboutPage'
+    : pagePath.startsWith('/category/')
+    ? 'CollectionPage'
+    : 'WebPage';
+
+// Breadcrumbs
+const pathSegments = pagePath.split('/').filter(Boolean);
 
 const breadcrumbItems = [
   {
-    "@type": "ListItem",
-    "position": 1,
-    "name": "Home",
-    "item": siteUrl
+    '@type': 'ListItem',
+    position: 1,
+    name: 'Home',
+    item: siteUrl
   },
+
   ...pathSegments.map((segment, index) => {
-    const itemPath = `/${pathSegments.slice(0, index + 1).join('/')}`;
-    const isCategoryArchive = pathSegments[0] === 'category' && index === 1;
-    const isArticleCategory = isArticle && index === 0;
-    const labelSource = isCategoryArchive || isArticleCategory
-      ? category
-      : segment.replace(/-/g, ' ');
+    const itemPath = `/${pathSegments
+      .slice(0, index + 1)
+      .join('/')}`;
+
+    const isCategoryArchive =
+      pathSegments[0] === 'category' && index === 1;
+
+    const isArticleCategory =
+      isArticle && index === 0;
+
+    const labelSource =
+      isCategoryArchive || isArticleCategory
+        ? category
+        : segment.replace(/-/g, ' ');
 
     return {
-      "@type": "ListItem",
-      "position": index + 2,
-      "name": (labelSource || segment).replace(/\b\w/g, (char) => char.toUpperCase()),
-      "item": new URL(itemPath, Astro.site || Astro.url).toString()
+      '@type': 'ListItem',
+      position: index + 2,
+      name: (labelSource || segment).replace(
+        /\b\w/g,
+        (char) => char.toUpperCase()
+      ),
+      item: new URL(
+        itemPath,
+        Astro.site || Astro.url
+      ).toString()
     };
   })
 ];
 
+// Types
 type JsonLdValue =
   | string
   | number
@@ -79,166 +127,317 @@ type JsonLdValue =
   | JsonLdValue[]
   | { [key: string]: JsonLdValue };
 
-type JsonLdNode = { [key: string]: JsonLdValue };
+type JsonLdNode = {
+  [key: string]: JsonLdValue;
+};
 
+// Schema Graph
 const schemaGraph: JsonLdNode[] = [
+  // Organization
   {
-    "@type": "Organization",
-    "@id": organizationId,
-    "name": siteName,
-    "url": siteUrl,
-    "description": siteDescription,
-    "logo": {
-      "@type": "ImageObject",
-      "url": new URL('/favicon-96x96.png', Astro.site || Astro.url).toString()
+    '@type': 'Organization',
+    '@id': organizationId,
+
+    name: siteName,
+    url: siteUrl,
+    description: siteDescription,
+
+    logo: {
+      '@type': 'ImageObject',
+      url: new URL(
+        '/favicon-96x96.png',
+        Astro.site || Astro.url
+      ).toString()
     },
-    "email": "contact@globalsblog.com",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "customer support",
-      "email": "contact@globalsblog.com",
-      "availableLanguage": ["en", "hi"],
-      "url": new URL('/contact-us', Astro.site || Astro.url).toString()
+
+    email: 'contact@globalsblog.com',
+
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: 'contact@globalsblog.com',
+      availableLanguage: ['en', 'hi'],
+      url: new URL(
+        '/contact-us',
+        Astro.site || Astro.url
+      ).toString()
     }
   },
+
+  // Website
   {
-    "@type": "WebSite",
-    "@id": websiteId,
-    "url": siteUrl,
-    "name": siteName,
-    "description": siteDescription,
-    "publisher": {
-      "@id": organizationId
+    '@type': 'WebSite',
+    '@id': websiteId,
+
+    url: siteUrl,
+    name: siteName,
+    description: siteDescription,
+
+    publisher: {
+      '@id': organizationId
     },
-    "inLanguage": "en"
+
+    inLanguage: 'en'
   },
+
+  // WebPage
   {
-    "@type": pageType,
-    "@id": webpageId,
-    "url": pageUrl,
-    "name": title,
-    "description": description,
-    "isPartOf": {
-      "@id": websiteId
+    '@type': pageType,
+    '@id': webpageId,
+
+    url: pageUrl,
+    name: title,
+    description: description,
+
+    isPartOf: {
+      '@id': websiteId
     },
-    "about": category ? {
-      "@type": "Thing",
-      "name": category
-    } : undefined,
-    "primaryImageOfPage": {
-      "@type": "ImageObject",
-      "url": socialImageUrl
+
+    about: category
+      ? {
+          '@type': 'Thing',
+          name: category
+        }
+      : undefined,
+
+    primaryImageOfPage: {
+      '@type': 'ImageObject',
+      url: socialImageUrl
     },
-    "breadcrumb": {
-      "@id": `${pageUrl}#breadcrumb`
-    }
+
+    breadcrumb: {
+      '@id': `${pageUrl}#breadcrumb`
+    },
+
+    inLanguage: 'en'
   },
+
+  // Breadcrumb
   {
-    "@type": "BreadcrumbList",
-    "@id": `${pageUrl}#breadcrumb`,
-    "itemListElement": breadcrumbItems
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+
+    itemListElement: breadcrumbItems
   }
 ];
 
-if (isArticle) {
-  if (authorName && authorId) {
-    schemaGraph.push({
-      "@type": "Person",
-      "@id": authorId,
-      "name": authorName,
-      "url": authorUrl || undefined,
-      "worksFor": {
-        "@id": organizationId
-      },
-      "sameAs": authorUrl ? [authorUrl] : undefined
-    });
-  }
-
+// Author
+if (isArticle && authorName && authorId) {
   schemaGraph.push({
-    "@type": "BlogPosting",
-    "@id": `${pageUrl}#article`,
-    "mainEntityOfPage": {
-      "@id": webpageId
+    '@type': 'Person',
+    '@id': authorId,
+
+    name: authorName,
+
+    url: authorUrl || undefined,
+
+    worksFor: {
+      '@id': organizationId
     },
-    "headline": title,
-    "description": description,
-    "image": [socialImageUrl],
-    "datePublished": articleDate,
-    "articleSection": category,
-    "author": authorName ? {
-      "@id": authorId || undefined,
-      "@type": "Person",
-      "name": authorName,
-      "url": authorUrl || undefined
-    } : undefined,
-    "publisher": {
-      "@id": organizationId
+
+    sameAs: authorUrl
+      ? [authorUrl]
+      : undefined
+  });
+}
+
+// BlogPosting
+if (isArticle) {
+  schemaGraph.push({
+    '@type': 'BlogPosting',
+    '@id': `${pageUrl}#article`,
+
+    mainEntityOfPage: {
+      '@id': webpageId
+    },
+
+    headline: title,
+    description: description,
+
+    image: [socialImageUrl],
+
+    datePublished: articleDate,
+    dateModified: articleDate,
+
+    articleSection: category,
+
+    inLanguage: 'en',
+
+    isPartOf: {
+      '@id': websiteId
+    },
+
+    author: authorName
+      ? {
+          '@id': authorId || undefined,
+          '@type': 'Person',
+          name: authorName,
+          url: authorUrl || undefined
+        }
+      : undefined,
+
+    publisher: {
+      '@id': organizationId
     }
   });
 }
 
+// Final Schema
 const schema = {
-  "@context": "https://schema.org",
-  "@graph": schemaGraph
+  '@context': 'https://schema.org',
+  '@graph': schemaGraph
 };
-
 ---
 
-<!-- Global Metadata -->
+<!-- Charset -->
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<link rel="sitemap" href="/sitemap-index.xml" />
-<link
-    rel="alternate"
-    type="application/rss+xml"
-    title={SITE_TITLE}
-    href={new URL('rss.xml', Astro.site)}
+
+<!-- Viewport -->
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
 />
-<meta name="generator" content={Astro.generator} />
 
-<!-- Canonical URL -->
-<link rel="canonical" href={canonicalURL} />
+<!-- Favicons -->
+<link
+  rel="icon"
+  type="image/png"
+  href="/favicon-96x96.png"
+  sizes="96x96"
+/>
 
-<!-- Primary Meta Tags -->
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="/favicon.svg"
+/>
+
+<link
+  rel="shortcut icon"
+  href="/favicon.ico"
+/>
+
+<link
+  rel="apple-touch-icon"
+  sizes="180x180"
+  href="/apple-touch-icon.png"
+/>
+
+<link
+  rel="manifest"
+  href="/site.webmanifest"
+/>
+
+<!-- RSS -->
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={SITE_TITLE}
+  href={new URL('rss.xml', Astro.site)}
+/>
+
+<!-- Generator -->
+<meta
+  name="generator"
+  content={Astro.generator}
+/>
+
+<!-- Canonical -->
+<link
+  rel="canonical"
+  href={canonicalURL}
+/>
+
+<!-- Primary SEO -->
 <title>{title}</title>
-<meta name="title" content={title} />
-<meta name="description" content={description} />
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content={isArticle ? 'article' : 'website'} />
-<meta property="og:site_name" content={SITE_TITLE} />
-<meta property="og:url" content={pageUrl} />
-<meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
-<meta property="og:image" content={socialImageUrl} />
+<meta
+  name="title"
+  content={title}
+/>
+
+<meta
+  name="description"
+  content={description}
+/>
+
+<!-- Open Graph -->
+<meta
+  property="og:type"
+  content={isArticle ? 'article' : 'website'}
+/>
+
+<meta
+  property="og:site_name"
+  content={SITE_TITLE}
+/>
+
+<meta
+  property="og:url"
+  content={pageUrl}
+/>
+
+<meta
+  property="og:title"
+  content={title}
+/>
+
+<meta
+  property="og:description"
+  content={description}
+/>
+
+<meta
+  property="og:image"
+  content={socialImageUrl}
+/>
 
 <!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={pageUrl} />
-<meta property="twitter:title" content={title} />
-<meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={socialImageUrl} />
+<meta
+  property="twitter:card"
+  content="summary_large_image"
+/>
 
+<meta
+  property="twitter:url"
+  content={pageUrl}
+/>
 
-<!-- Google Discover: Schema Markup -->
-<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<meta
+  property="twitter:title"
+  content={title}
+/>
 
+<meta
+  property="twitter:description"
+  content={description}
+/>
 
-<!-- Google tag (gtag.js) -->
-<script 
-  type="text/partytown" 
-  async 
-  src="https://www.googletagmanager.com/gtag/js?id=G-4Y99EX9SML">
-</script>
+<meta
+  property="twitter:image"
+  content={socialImageUrl}
+/>
+
+<!-- JSON-LD Schema -->
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify(schema)}
+/>
+
+<!-- Google Analytics -->
+<script
+  type="text/partytown"
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-4Y99EX9SML"
+></script>
 
 <script type="text/partytown">
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+
   gtag('js', new Date());
 
   gtag('config', 'G-4Y99EX9SML');
