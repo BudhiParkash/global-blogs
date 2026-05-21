@@ -20,16 +20,19 @@ export async function GET(context) {
     site: context.site,
     items: (posts || []).map((post) => {
       // 2. Extract the category slug (handle array or single object)
-      const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+      const categoryData = Array.isArray(post.categories) ? post.categories : post.categories;
       const categorySlug = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+
+      // 3. Build the path string and strictly strip any trailing slashes
+      const cleanPath = `/${categorySlug}/${post.slug}`.replace(/\/$/, "");
 
       return {
         title: post.title,
         pubDate: new Date(post.published_at),
-        description: post.excerpt || post.description, // Use excerpt if available
-        // 3. Update the link to follow the hierarchical structure
-        link: `/${categorySlug}/${post.slug}`,
-        // 4. Optional: Add category to the RSS item metadata
+        description: post.excerpt || post.description, 
+        // 4. Pass the clean, non-trailing slash path
+        link: cleanPath,
+        // 5. Add category to the RSS item metadata
         categories: [categoryData?.name || 'General'],
       };
     }),
