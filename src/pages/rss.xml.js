@@ -18,6 +18,9 @@ export async function GET(context) {
     title: 'GlobalsBlog',
     description: 'Latest News in Travel, Auto, and Beauty',
     site: context.site,
+
+    trailingSlash: false,
+    
     items: (posts || []).map((post) => {
       // 2. Extract the category slug (handle array or single object)
       const categoryData = Array.isArray(post.categories) ? post.categories : post.categories;
