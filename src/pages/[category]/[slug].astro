@@ -1,7 +1,9 @@
 ---
+// src/pages/[category]/[slug].astro
 import Layout from '../../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
 import { Image } from 'astro:assets';
+import '../../styles/blog-content.css';   // ← add this import
 
 const supabase = createClient(
   import.meta.env.SUPABASE_URL,
@@ -13,23 +15,21 @@ export async function getStaticPaths() {
     import.meta.env.SUPABASE_URL,
     import.meta.env.SUPABASE_ANON_KEY
   );
-  
+
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, categories(name)')
+    .select('slug, accent_color, categories(name)')
     .eq('is_published', true);
-  
+
   return posts?.map((post) => {
-    // FIX: Access the first element of the categories array
-    // Supabase returns nested joins as arrays unless specified otherwise
-    const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-    const categoryParam = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
-    
+    const categoryData = Array.isArray(post.categories)
+      ? post.categories[0]
+      : post.categories;
+    const categoryParam =
+      categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+
     return {
-      params: { 
-        category: categoryParam, 
-        slug: post.slug 
-      },
+      params: { category: categoryParam, slug: post.slug },
       props: { post },
     };
   }) || [];
@@ -37,7 +37,6 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 
-// Fetch full post data with author and category details
 const { data: post } = await supabase
   .from('posts')
   .select(`
@@ -58,7 +57,9 @@ if (!post) return Astro.redirect('/404');
 
 const categoryName = post.categories?.name || 'Lifestyle';
 
-
+// accent_color column in Supabase — e.g. "red" | "blue" | "green" | "amber" | "teal" | "violet" | "orange" | "cyan"
+// Falls back to "blue" if not set
+const accentColor = post.accent_color || 'blue';
 ---
 
 <Layout
@@ -81,41 +82,54 @@ const categoryName = post.categories?.name || 'Lifestyle';
       <h1>{post.title}</h1>
       <p class="article-meta">
         {post.published_at && new Date(post.published_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
+          year: 'numeric', month: 'long', day: 'numeric',
         })}
       </p>
     </header>
 
     {post.hero_image && (
-      <Image 
-        src={post.hero_image} 
-        width={1200} 
-        height={675} 
-        widths={[400, 800, 1200]}
+      <Image
+        src={post.hero_image}
+        width={1200}
+        height={675}
+        widths={[400, 1200]}
         sizes="(max-width: 800px) 100vw, 1200px"
         alt={post.title}
-        loading="eager" 
+        loading="eager"
         fetchpriority="high"
         class="article-image w-full rounded-3xl shadow-2xl mb-12"
       />
     )}
 
-    <section class="article-body">
+    <!--
+      data-accent drives the CSS variable --acc in blog-content.css
+      Value comes from the accent_color column in Supabase posts table
+    -->
+    <section
+      class="article-body"
+      data-accent={accentColor}
+    >
       <Fragment set:html={post.content} />
     </section>
 
     {post.author && (
       <footer class="author-card">
         <div class="author-content">
-          <img src={post.author.avatar_url} alt={post.author.name} class="author-avatar" />
+          <img
+            src={post.author.avatar_url}
+            alt={post.author.name}
+            class="author-avatar"
+          />
           <div class="author-text">
             <span class="label">Written by</span>
             <h3>{post.author.name}</h3>
             <p>{post.author.bio}</p>
             {post.author.handle_link && (
-              <a href={`${post.author.handle_link}`} class="author-link" target="_blank">
+              <a
+                href={`${post.author.handle_link}`}
+                class="author-link"
+                target="_blank"
+              >
                 Follow on {post.author.twitter_handle || 'Social'}
               </a>
             )}
@@ -126,27 +140,12 @@ const categoryName = post.categories?.name || 'Lifestyle';
   </article>
 </Layout>
 
+<!-- Keep your existing article-shell styles unchanged below -->
 <style>
-  .article-shell {
-    width: min(860px, 100%);
-  
-  }
-
-  .article-back {
-    margin-bottom: 1rem;
-  }
-
-  .article-back a {
-    text-decoration: none;
-    color: var(--muted);
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  .article-back a:hover {
-    color: var(--accent-strong);
-  }
-
+  .article-shell { width: min(860px, 100%); }
+  .article-back { margin-bottom: 1rem; }
+  .article-back a { text-decoration: none; color: var(--muted); font-weight: 500; transition: color 0.2s; }
+  .article-back a:hover { color: var(--accent-strong); }
   .article-header {
     margin-bottom: 1rem;
     padding: clamp(1.5rem, 4vw, 2.5rem);
@@ -155,7 +154,6 @@ const categoryName = post.categories?.name || 'Lifestyle';
     background: var(--card);
     box-shadow: var(--shadow-tight);
   }
-
   .article-tag {
     display: inline-block;
     margin-bottom: 0.9rem;
@@ -165,19 +163,8 @@ const categoryName = post.categories?.name || 'Lifestyle';
     color: var(--accent-strong);
     font-weight: 700;
   }
-
-  .article-header h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    line-height: 1;
-    margin: 0;
-  }
-
-  .article-meta {
-    margin: 1.5rem 0 0;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-
+  .article-header h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; margin: 0; }
+  .article-meta { margin: 1.5rem 0 0; color: var(--muted); font-size: 0.9rem; }
   .article-image {
     width: 100%;
     aspect-ratio: 16/9;
@@ -185,17 +172,15 @@ const categoryName = post.categories?.name || 'Lifestyle';
     border-radius: var(--radius-xl);
     margin-bottom: 3rem;
   }
-
   .article-body {
-    /* padding: clamp(1.5rem, 5vw, 3rem); */
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
     background: rgba(255, 253, 248, 0.94);
     box-shadow: var(--shadow-tight);
     line-height: 1.7;
     font-size: 1.15rem;
+    padding: clamp(1.5rem, 5vw, 3rem);   /* ← add padding here instead of in content */
   }
-
   .author-card {
     margin-top: 4rem;
     padding: 2.5rem;
@@ -205,78 +190,28 @@ const categoryName = post.categories?.name || 'Lifestyle';
     position: relative;
     overflow: hidden;
   }
-
   .author-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
     background: var(--accent-strong);
   }
-
-  .author-content {
-    display: flex;
-    gap: 2rem;
-    align-items: center;
-  }
-
+  .author-content { display: flex; gap: 2rem; align-items: center; }
   .author-avatar {
-    width: 100px;
-    height: 100px;
+    width: 100px; height: 100px;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid var(--background);
     box-shadow: var(--shadow);
   }
-
-  .label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1rem;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-
-  .author-text h3 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--heading);
-  }
-
-  .author-text p {
-    margin: 0.5rem 0 1rem;
-    color: var(--text);
-    font-size: 1rem;
-    opacity: 0.85;
-  }
-
-  .author-link {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--accent-strong);
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
-    transition: border 0.2s;
-  }
-
-  .author-link:hover {
-    border-color: var(--accent-strong);
-  }
-
+  .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1rem; color: var(--muted); display: block; margin-bottom: 0.25rem; }
+  .author-text h3 { margin: 0; font-size: 1.5rem; color: var(--heading); }
+  .author-text p  { margin: 0.5rem 0 1rem; color: var(--text); font-size: 1rem; opacity: 0.85; }
+  .author-link { font-size: 0.85rem; font-weight: 700; color: var(--accent-strong); text-decoration: none; border-bottom: 2px solid transparent; transition: border 0.2s; }
+  .author-link:hover { border-color: var(--accent-strong); }
   @media (max-width: 600px) {
-    .author-content {
-      flex-direction: column;
-      text-align: center;
-    }
-    .author-card {
-      padding: 2rem 1.5rem;
-    }
+    .author-content { flex-direction: column; text-align: center; }
+    .author-card { padding: 2rem 1.5rem; }
   }
-
-  .article-body :global(h2) { font-size: 2rem; margin-top: 1rem; }
-  .article-body :global(p) { margin-bottom: 1.5rem; }
-  .article-body :global(img) { border-radius: var(--radius-lg); margin: 3rem 0; }
 </style>
