@@ -10,6 +10,14 @@ const supabase = createClient(
   import.meta.env.SUPABASE_ANON_KEY
 );
 
+function slugify(value = '') {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export async function getStaticPaths() {
   const supabase = createClient(
     import.meta.env.SUPABASE_URL,
@@ -60,6 +68,11 @@ const categoryName = post.categories?.name || 'Lifestyle';
 // accent_color column in Supabase — e.g. "red" | "blue" | "green" | "amber" | "teal" | "violet" | "orange" | "cyan"
 // Falls back to "blue" if not set
 const accentColor = post.accent_color || 'blue';
+const authorProfileUrl = post.author?.name
+  ? `/authors/${slugify(post.author.name)}`
+  : null;
+const clientSupabaseUrl = import.meta.env.SUPABASE_URL;
+const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 ---
 
 <Layout
@@ -112,23 +125,95 @@ const accentColor = post.accent_color || 'blue';
       <Fragment set:html={post.content} />
     </section>
 
+    <section class="comment-card" aria-labelledby="comment-title">
+      <div class="comment-heading">
+        <div>
+          <span class="label">Join the discussion</span>
+          <h2 id="comment-title">Leave a comment</h2>
+          <p>Share a quick thought about this story.</p>
+        </div>
+        <span class="comment-status">Review required</span>
+      </div>
+
+      <form
+        class="comment-form"
+        id="comment-form"
+        data-post-id={post.id}
+        data-post-slug={post.slug}
+        data-supabase-url={clientSupabaseUrl}
+        data-supabase-anon-key={clientSupabaseAnonKey}
+      >
+        <div class="comment-field-row">
+          <label>
+            <span>Name</span>
+            <input type="text" name="name" autocomplete="name" placeholder="Your name" required />
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+        </div>
+        <label>
+          <span>Comment</span>
+          <textarea name="comment" rows="5" placeholder="Write your comment here..." required></textarea>
+        </label>
+        <div class="comment-actions">
+          <p>Your comment is saved for review before publishing.</p>
+          <button type="submit">Post comment</button>
+        </div>
+      </form>
+
+      <div class="comment-submitted" id="comment-submitted" hidden>
+        <div class="submitted-mark" aria-hidden="true">✓</div>
+        <div>
+          <strong>Comment submitted</strong>
+          <p>Thanks for sharing your view. It is ready for review.</p>
+        </div>
+      </div>
+
+      <div class="comment-error" id="comment-error" hidden>
+        <strong>Comment was not saved</strong>
+        <p>Please try again in a moment.</p>
+      </div>
+    </section>
+
     {post.author && (
       <footer class="author-card">
         <div class="author-content">
-          <img
-            src={post.author.avatar_url}
-            alt={post.author.name}
-            class="author-avatar"
-          />
+          {authorProfileUrl ? (
+            <a href={authorProfileUrl} aria-label={`View ${post.author.name} author profile`}>
+              <img
+                src={post.author.avatar_url}
+                alt={post.author.name}
+                class="author-avatar"
+              />
+            </a>
+          ) : (
+            <img
+              src={post.author.avatar_url}
+              alt={post.author.name}
+              class="author-avatar"
+            />
+          )}
           <div class="author-text">
             <span class="label">Written by</span>
-            <h3>{post.author.name}</h3>
+            <h3>
+              {authorProfileUrl ? (
+                <a href={authorProfileUrl}>{post.author.name}</a>
+              ) : (
+                post.author.name
+              )}
+            </h3>
             <p>{post.author.bio}</p>
+            {authorProfileUrl && (
+              <a href={authorProfileUrl} class="author-link">View author profile</a>
+            )}
             {post.author.handle_link && (
               <a
                 href={`${post.author.handle_link}`}
-                class="author-link"
+                class="author-link external-author-link"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 Follow on {post.author.twitter_handle || 'Social'}
               </a>
@@ -181,6 +266,145 @@ const accentColor = post.accent_color || 'blue';
     font-size: 1.15rem;
     padding: clamp(1.5rem, 5vw, 3rem);   /* ← add padding here instead of in content */
   }
+  .comment-card {
+    margin-top: 3rem;
+    padding: clamp(1.2rem, 4vw, 2rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(248, 243, 236, 0.9)),
+      var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+  .comment-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .comment-heading h2 { margin: 0; font-size: clamp(1.45rem, 3vw, 2.1rem); }
+  .comment-heading p { margin: 0.45rem 0 0; color: var(--muted); }
+  .comment-status {
+    flex: 0 0 auto;
+    border: 1px solid rgba(182, 91, 46, 0.2);
+    border-radius: 999px;
+    background: rgba(182, 91, 46, 0.08);
+    color: var(--accent-strong);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .comment-form {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: 1.25rem;
+  }
+  .comment-field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .comment-form label {
+    display: grid;
+    gap: 0.45rem;
+    color: var(--ink-strong);
+    font-weight: 700;
+  }
+  .comment-form label span { font-size: 0.92rem; }
+  .comment-form input,
+  .comment-form textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 253, 248, 0.92);
+    color: var(--ink);
+    padding: 0.85rem 0.95rem;
+    outline: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+  .comment-form input::placeholder,
+  .comment-form textarea::placeholder {
+    color: rgba(107, 98, 91, 0.72);
+  }
+  .comment-form input:focus,
+  .comment-form textarea:focus {
+    border-color: rgba(182, 91, 46, 0.58);
+    background: #fffdf8;
+    box-shadow: 0 0 0 4px rgba(182, 91, 46, 0.12);
+  }
+  .comment-form textarea { min-height: 150px; resize: vertical; }
+  .comment-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .comment-actions p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .comment-form button {
+    flex: 0 0 auto;
+    min-height: 44px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--ink-strong), #4a2b1d);
+    color: #fff7ef;
+    padding: 0.78rem 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(47, 33, 20, 0.13);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+  .comment-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(47, 33, 20, 0.18);
+  }
+  .comment-form button:disabled {
+    cursor: wait;
+    opacity: 0.72;
+    transform: none;
+  }
+  .comment-submitted {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(64, 116, 63, 0.25);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(64, 116, 63, 0.11), rgba(255, 253, 248, 0.92));
+  }
+  .comment-form[hidden],
+  .comment-submitted[hidden],
+  .comment-error[hidden] {
+    display: none;
+  }
+  .submitted-mark {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #40743f;
+    color: #fffdf8;
+    font-weight: 700;
+  }
+  .comment-submitted strong { color: var(--ink-strong); }
+  .comment-submitted p { margin: 0.25rem 0 0; color: var(--muted); }
+  .comment-error {
+    margin-top: 1.2rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(150, 56, 45, 0.25);
+    border-radius: 16px;
+    background: rgba(150, 56, 45, 0.08);
+  }
+  .comment-error strong { color: var(--ink-strong); }
+  .comment-error p { margin: 0.25rem 0 0; color: var(--muted); }
   .author-card {
     margin-top: 4rem;
     padding: 2.5rem;
@@ -198,20 +422,86 @@ const accentColor = post.accent_color || 'blue';
     background: var(--accent-strong);
   }
   .author-content { display: flex; gap: 2rem; align-items: center; }
+  .author-content > a { flex: 0 0 auto; }
   .author-avatar {
     width: 100px; height: 100px;
-    border-radius: 50%;
+    border-radius: 20%;
     object-fit: cover;
     border: 4px solid var(--background);
     box-shadow: var(--shadow);
   }
   .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1rem; color: var(--muted); display: block; margin-bottom: 0.25rem; }
   .author-text h3 { margin: 0; font-size: 1.5rem; color: var(--heading); }
+  .author-text h3 a { color: inherit; text-decoration: none; }
+  .author-text h3 a:hover { color: var(--accent-strong); }
   .author-text p  { margin: 0.5rem 0 1rem; color: var(--text); font-size: 1rem; opacity: 0.85; }
-  .author-link { font-size: 0.85rem; font-weight: 700; color: var(--accent-strong); text-decoration: none; border-bottom: 2px solid transparent; transition: border 0.2s; }
+  .author-link { display: inline-flex; margin-right: 0.9rem; font-size: 0.85rem; font-weight: 700; color: var(--accent-strong); text-decoration: none; border-bottom: 2px solid transparent; transition: border 0.2s; }
   .author-link:hover { border-color: var(--accent-strong); }
-  @media (max-width: 600px) {
-    .author-content { flex-direction: column; text-align: center; }
-    .author-card { padding: 2rem 1.5rem; }
-  }
-</style>
+	  @media (max-width: 600px) {
+    .comment-heading,
+    .comment-actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .comment-field-row {
+      grid-template-columns: 1fr;
+    }
+    .comment-form button {
+      width: 100%;
+    }
+	    .author-content { flex-direction: column; text-align: center; }
+	    .author-card { padding: 2rem 1.5rem; }
+	  }
+	</style>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  const commentForm = document.getElementById('comment-form') as HTMLFormElement | null;
+  const submittedMessage = document.getElementById('comment-submitted');
+  const errorMessage = document.getElementById('comment-error');
+  const submitButton = commentForm?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+
+  commentForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const supabaseUrl = commentForm.dataset.supabaseUrl;
+    const supabaseAnonKey = commentForm.dataset.supabaseAnonKey;
+    const formData = new FormData(commentForm);
+    const name = String(formData.get('name') || '').trim();
+    const email = String(formData.get('email') || '').trim();
+    const comment = String(formData.get('comment') || '').trim();
+    const postId = Number(commentForm.dataset.postId);
+
+    if (!supabaseUrl || !supabaseAnonKey || !name || !comment) {
+      errorMessage?.removeAttribute('hidden');
+      return;
+    }
+
+    errorMessage?.setAttribute('hidden', '');
+    submitButton?.setAttribute('disabled', '');
+    if (submitButton) submitButton.textContent = 'Posting...';
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const { error } = await supabase.from('comments').insert({
+      post_id: Number.isNaN(postId) ? null : postId,
+      post_slug: commentForm.dataset.postSlug,
+      name,
+      email: email || null,
+      comment,
+      is_approved: false,
+    });
+
+    submitButton?.removeAttribute('disabled');
+    if (submitButton) submitButton.textContent = 'Post comment';
+
+    if (error) {
+      errorMessage?.removeAttribute('hidden');
+      return;
+    }
+
+    commentForm.reset();
+    commentForm.setAttribute('hidden', '');
+    submittedMessage?.removeAttribute('hidden');
+  });
+</script>

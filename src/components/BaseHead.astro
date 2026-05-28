@@ -10,8 +10,11 @@ interface Props {
   articleDate?: string;
   authorName?: string;
   authorUrl?: string;
+  authorBio?: string;
+  authorAvatar?: string;
   category?: string;
   isArticle?: boolean;
+  isAuthorProfile?: boolean;
 }
 
 const {
@@ -21,8 +24,11 @@ const {
   articleDate,
   authorName,
   authorUrl,
+  authorBio,
+  authorAvatar,
   category,
-  isArticle = false
+  isArticle = false,
+  isAuthorProfile = false
 } = Astro.props;
 
 // URLs
@@ -58,7 +64,7 @@ const authorId = authorSlug
   : null;
 
 // Social Image
-const socialImage = image || '/blog-placeholder-social.jpg';
+const socialImage = image || authorAvatar || '/blog-placeholder-social.jpg';
 
 const socialImageUrl = new URL(
   socialImage,
@@ -71,6 +77,8 @@ const pageType =
     ? 'ContactPage'
     : pagePath === '/about'
     ? 'AboutPage'
+    : pagePath.startsWith('/authors/')
+    ? 'ProfilePage'
     : pagePath.startsWith('/category/')
     ? 'CollectionPage'
     : 'WebPage';
@@ -200,6 +208,12 @@ const schemaGraph: JsonLdNode[] = [
         }
       : undefined,
 
+    mainEntity: isAuthorProfile && authorId
+      ? {
+          '@id': authorId
+        }
+      : undefined,
+
     primaryImageOfPage: {
       '@type': 'ImageObject',
       url: socialImageUrl
@@ -222,14 +236,21 @@ const schemaGraph: JsonLdNode[] = [
 ];
 
 // Author
-if (isArticle && authorName && authorId) {
+if ((isArticle || isAuthorProfile) && authorName && authorId) {
   schemaGraph.push({
     '@type': 'Person',
     '@id': authorId,
 
     name: authorName,
+    description: authorBio || undefined,
+    image: authorAvatar
+      ? {
+          '@type': 'ImageObject',
+          url: new URL(authorAvatar, Astro.site || Astro.url).toString()
+        }
+      : undefined,
 
-    url: authorUrl || undefined,
+    url: new URL(`/authors/${authorSlug}`, Astro.site || Astro.url).toString(),
 
     worksFor: {
       '@id': organizationId
@@ -272,7 +293,9 @@ if (isArticle) {
           '@id': authorId || undefined,
           '@type': 'Person',
           name: authorName,
-          url: authorUrl || undefined
+          url: authorSlug
+            ? new URL(`/authors/${authorSlug}`, Astro.site || Astro.url).toString()
+            : authorUrl || undefined
         }
       : undefined,
 

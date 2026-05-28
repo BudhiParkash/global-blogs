@@ -1,0 +1,413 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.SUPABASE_URL,
+  import.meta.env.SUPABASE_ANON_KEY
+);
+
+type Category = {
+  slug?: string;
+  name?: string;
+};
+
+type Author = {
+  id?: string;
+  name?: string;
+  bio?: string;
+  avatar_url?: string;
+  twitter_handle?: string;
+  handle_link?: string;
+};
+
+type AuthorPathPost = {
+  author_id?: string;
+  author?: Author | Author[];
+};
+
+type AuthorPost = {
+  slug: string;
+  title: string;
+  excerpt?: string;
+  description?: string;
+  hero_image?: string;
+  published_at?: string;
+  categories?: Category | Category[];
+};
+
+function slugify(value: string = '') {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function getSingle<T>(value: T | T[] | null | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getPostUrl(post: AuthorPost) {
+  const category = getSingle(post.categories);
+  const categorySlug = category?.slug || slugify(category?.name || 'blog');
+
+  return `/${categorySlug}/${post.slug}`;
+}
+
+export async function getStaticPaths() {
+  const slugifyAuthor = (value: string = '') =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  const getSingleAuthor = <T,>(value: T | T[] | null | undefined) =>
+    Array.isArray(value) ? value[0] : value;
+  const supabase = createClient(
+    import.meta.env.SUPABASE_URL,
+    import.meta.env.SUPABASE_ANON_KEY
+  );
+
+  const { data: posts } = await supabase
+    .from('posts')
+    .select(`
+      author_id,
+      author:author_id (
+        id,
+        name,
+        bio,
+        avatar_url,
+        twitter_handle,
+        handle_link
+      )
+    `)
+    .eq('is_published', true);
+
+  const authorsBySlug = new Map<string, Author>();
+
+  posts?.forEach((post: AuthorPathPost) => {
+    const author = getSingleAuthor(post.author);
+    const authorSlug = slugifyAuthor(author?.name || '');
+
+    if (authorSlug && !authorsBySlug.has(authorSlug)) {
+      authorsBySlug.set(authorSlug, {
+        ...author,
+        id: author?.id || post.author_id,
+      });
+    }
+  });
+
+  return [...authorsBySlug.entries()].map(([authorSlug, author]) => ({
+    params: { author: authorSlug },
+    props: { author },
+  }));
+}
+
+const { author: authorSlug } = Astro.params;
+const { author } = Astro.props;
+
+if (!author) return Astro.redirect('/404');
+
+const { data: posts } = await supabase
+  .from('posts')
+  .select('*, categories(slug, name)')
+  .eq('author_id', author.id)
+  .eq('is_published', true)
+  .order('published_at', { ascending: false });
+
+const authorName = author.name || 'GlobalsBlog Author';
+const authorBio =
+  author.bio ||
+  `${authorName} writes practical stories across travel, auto, beauty, news, and lifestyle topics for GlobalsBlog.`;
+const seoTitle = `${authorName} - Author at GlobalsBlog`;
+const seoDescription = `Read articles by ${authorName} on GlobalsBlog. Browse the latest published stories, author bio, and editorial expertise in one profile.`;
+---
+
+<Layout
+  title={seoTitle}
+  description={seoDescription}
+  authorName={authorName}
+  authorUrl={author.handle_link}
+  authorBio={authorBio}
+  authorAvatar={author.avatar_url}
+  isAuthorProfile={true}
+>
+  <section class="author-profile" id="person">
+    <div class="author-hero">
+      {author.avatar_url && (
+        <img
+          src={author.avatar_url}
+          alt={authorName}
+          class="author-photo"
+          loading="eager"
+        />
+      )}
+
+      <div>
+        <p class="eyebrow">Author profile</p>
+        <h1>{authorName}</h1>
+        <p class="author-bio">{authorBio}</p>
+
+        <div class="author-actions">
+          <a href="#articles">View articles</a>
+          {author.handle_link && (
+            <a href={author.handle_link} target="_blank" rel="noopener noreferrer">
+              {author.twitter_handle ? `Follow ${author.twitter_handle}` : 'Author social profile'}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <div class="author-summary" aria-label="Author details">
+      <div>
+        <strong>{posts?.length || 0}</strong>
+        <span>Published articles</span>
+      </div>
+      <div>
+        <strong>GlobalsBlog</strong>
+        <span>Editorial contributor</span>
+      </div>
+      <div>
+        <strong>Travel, Auto, Beauty, News</strong>
+        <span>Covered categories</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="articles-section" id="articles">
+    <div class="section-heading">
+      <p class="eyebrow">Articles by {authorName}</p>
+      <h2>All published stories</h2>
+    </div>
+
+    {posts?.length ? (
+      <div class="article-grid">
+        {posts.map((post) => {
+          const category = getSingle(post.categories);
+
+          return (
+            <article class="article-card">
+              <a href={getPostUrl(post)}>
+                {post.hero_image && (
+                  <img src={post.hero_image} alt={post.title} loading="lazy" />
+                )}
+                <div class="article-card-body">
+                  <span>{category?.name ?? 'Story'}</span>
+                  <h3>{post.title}</h3>
+                  <p>
+                    {post.excerpt ||
+                      post.description ||
+                      `Read this ${category?.name?.toLowerCase() || 'story'} article by ${authorName}.`}
+                  </p>
+                  {post.published_at && (
+                    <time datetime={post.published_at}>
+                      {new Date(post.published_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </time>
+                  )}
+                </div>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <h2>No published articles found</h2>
+        <p>This author profile is available, but published posts are not attached yet.</p>
+      </div>
+    )}
+  </section>
+</Layout>
+
+<style>
+  .author-profile,
+  .articles-section {
+    display: grid;
+    gap: 1.4rem;
+  }
+
+  .author-hero,
+  .author-summary,
+  .article-card a,
+  .empty-state {
+    border: 1px solid var(--line);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .author-hero {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: clamp(1.4rem, 4vw, 2.5rem);
+    align-items: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border-radius: var(--radius-xl);
+  }
+
+  .author-photo {
+    width: 180px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--surface-strong);
+    box-shadow: var(--shadow);
+  }
+
+  .author-bio {
+    max-width: 58rem;
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 1.08rem;
+  }
+
+  .author-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.3rem;
+  }
+
+  .author-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    background: var(--ink-strong);
+    color: #fff7ef;
+  }
+
+  .author-actions a + a {
+    background: transparent;
+    color: var(--accent-strong);
+    border: 1px solid var(--line);
+  }
+
+  .author-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.2rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .author-summary div {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .author-summary strong {
+    color: var(--ink-strong);
+    line-height: 1.2;
+  }
+
+  .author-summary span,
+  .section-heading,
+  .article-card-body p,
+  .article-card-body time,
+  .empty-state p {
+    color: var(--muted);
+  }
+
+  .articles-section {
+    margin-top: 2.4rem;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .article-card a {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .article-card a:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .article-card img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .article-card-body {
+    display: grid;
+    gap: 0.65rem;
+    padding: 1.15rem;
+  }
+
+  .article-card-body span {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .article-card-body h3 {
+    margin: 0;
+    font-size: 1.35rem;
+  }
+
+  .article-card-body p {
+    margin: 0;
+  }
+
+  .article-card-body time {
+    font-size: 0.9rem;
+  }
+
+  .empty-state {
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+  }
+
+  @media (max-width: 980px) {
+    .article-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .author-hero,
+    .author-summary,
+    .article-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .author-photo {
+      width: 140px;
+    }
+
+    .section-heading {
+      display: block;
+    }
+  }
+</style>

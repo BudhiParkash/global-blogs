@@ -12,15 +12,25 @@ interface Props {
     articleDate?: string;
     authorName?: string;
     authorUrl?: string;
+    authorBio?: string;
+    authorAvatar?: string;
     category?: string;
     isArticle?: boolean;
+    isAuthorProfile?: boolean;
 }
 
 const { 
     title, 
     description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.', 
     image ,
-    articleDate, authorName, authorUrl , category, isArticle = false 
+    articleDate,
+    authorName,
+    authorUrl,
+    authorBio,
+    authorAvatar,
+    category,
+    isArticle = false,
+    isAuthorProfile = false
 } = Astro.props;
 ---
 
@@ -45,9 +55,11 @@ const {
         <BaseHead title={title} description={description} image={image} articleDate={articleDate}
             authorName={authorName}
             authorUrl={authorUrl}
-            isArticle={!!articleDate} 
+            authorBio={authorBio}
+            authorAvatar={authorAvatar}
             category={category}
-            isArticle={isArticle}   
+            isArticle={isArticle}
+            isAuthorProfile={isAuthorProfile}
             />
     </head>
     <body>
