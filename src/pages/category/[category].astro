@@ -3,20 +3,97 @@ import Layout from '../../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
 import { SITE_CATEGORIES } from '../../consts';
 
+// Per-category SEO metadata + keyword-rich content
+const categoryMeta = {
+  travel: {
+    heading: 'Travel Guides, Budget Travel Tips & Destination Itineraries',
+    intro:
+      'Browse our full travel archive covering budget travel tips, solo travel guides, international destination itineraries, honeymoon ideas, and practical hacks for every type of journey. Whether you are planning a weekend getaway or a month-long adventure, this archive has something for every traveller.',
+    subtopics: ['Budget Travel', 'Destination Guides', 'Solo Travel', 'Honeymoon Ideas', 'Adventure Travel', 'Travel Hacks', 'Itineraries'],
+    seoTitle: 'Travel Guides, Budget Tips & Destination Itineraries | GlobalsBlog',
+    seoDesc:
+      'Browse travel articles on GlobalsBlog — destination guides, budget travel tips, solo travel advice, honeymoon ideas, and international itineraries for every type of traveller.',
+    bullets: [
+      'Budget travel tips and cost-saving hacks for domestic and international trips',
+      'Step-by-step destination guides for popular and off-beat locations',
+      'Solo travel advice for safe, rewarding independent journeys',
+      'Honeymoon destination ideas and couple travel itineraries',
+      'Adventure travel, trekking, and outdoor activity guides',
+      'Practical packing lists, visa information, and booking tips',
+    ],
+    exploreLabel: 'Where do you want to go next?',
+  },
+  auto: {
+    heading: 'Car Reviews, Best Mileage Cars in India & Auto Buying Guides',
+    intro:
+      'Explore our auto archive with car reviews, best mileage cars in India comparisons, fuel efficiency guides, CNG and electric car updates, SUV buying advice, and the latest automotive news covering Maruti, Hyundai, Tata, and more.',
+    subtopics: ['Best Mileage Cars', 'Car Reviews', 'SUV Guide', 'CNG Cars', 'EV News', 'Fuel Efficiency', 'Buying Guide'],
+    seoTitle: 'Car Reviews, Best Mileage Cars in India & Buying Guides | GlobalsBlog',
+    seoDesc:
+      'Read auto articles on GlobalsBlog — best mileage cars in India, car reviews, SUV buying guides, fuel efficiency tips, CNG car comparisons, and the latest automotive news.',
+    bullets: [
+      'Best mileage cars in India ranked by fuel efficiency for city and highway use',
+      'In-depth car reviews covering performance, comfort, and value for money',
+      'SUV and hatchback buying guides across every budget segment',
+      'CNG and electric vehicle (EV) comparisons, range, and running cost breakdowns',
+      'Car ownership tips covering maintenance, insurance, and resale value',
+      'Latest auto industry news and upcoming car launches in India',
+    ],
+    exploreLabel: 'Find your next car with confidence.',
+  },
+  beauty: {
+    heading: 'Skincare Routines, Makeup Tutorials & Beauty Tips',
+    intro:
+      'Discover our beauty archive with complete skincare routines for every skin type, easy step-by-step makeup tutorials, ingredient guides for niacinamide, retinol, and vitamin C, acne treatment advice, and the latest trends including skin cycling and barrier repair skincare.',
+    subtopics: ['Skincare Routine', 'Makeup Tutorial', 'Acne Treatment', 'Niacinamide', 'Retinol Guide', 'Skin Cycling', 'Nail Art', 'Beauty Trends'],
+    seoTitle: 'Skincare Routines, Makeup Tutorials & Beauty Tips | GlobalsBlog',
+    seoDesc:
+      'Browse beauty articles on GlobalsBlog — skincare routines for every skin type, easy makeup tutorials, acne treatments, ingredient guides for niacinamide and retinol, and the latest beauty trends.',
+    bullets: [
+      'Daily and weekly skincare routines for dry, oily, combination, and sensitive skin',
+      'Easy makeup tutorials including 5-minute looks, smoky eye, and everyday glam',
+      'Ingredient deep-dives: niacinamide, retinol, vitamin C, hyaluronic acid, and more',
+      'Acne treatment guides, dark spot removal tips, and product recommendations',
+      'Skin cycling, barrier repair, and microbiome skincare trend explainers',
+      'Nail art ideas, brow lamination tips, and honest budget-to-luxury product reviews',
+    ],
+    exploreLabel: 'Build the skincare and beauty routine that works for you.',
+  },
+  news: {
+    heading: 'Latest News, Trending Topics & Current Events',
+    intro:
+      'Stay informed with our news archive covering trending topics, technology updates, health and wellness stories, global events, and timely coverage of the issues that shape daily life. Fresh stories published regularly across every major news category.',
+    subtopics: ['Trending Topics', 'Technology News', 'Health & Wellness', 'Global Events', 'Business', 'Lifestyle News'],
+    seoTitle: 'Latest News, Trending Topics & Current Events | GlobalsBlog',
+    seoDesc:
+      'Read the latest news on GlobalsBlog — trending topics, technology updates, health and wellness stories, global events, and current affairs coverage published regularly.',
+    bullets: [
+      'Breaking news and trending topics updated with fresh stories regularly',
+      'Technology news covering AI, gadgets, apps, and digital lifestyle shifts',
+      'Health and wellness updates including fitness, nutrition, and mental wellbeing',
+      'Global events, geopolitics, and international developments explained clearly',
+      'Business and economic news relevant to everyday readers',
+      'Lifestyle and culture stories covering modern living and society',
+    ],
+    exploreLabel: 'Stay current with what matters most.',
+  },
+};
+
+type CategoryKey = keyof typeof categoryMeta;
+
 export async function getStaticPaths() {
   const supabase = createClient(
-    import.meta.env.SUPABASE_URL, 
+    import.meta.env.SUPABASE_URL,
     import.meta.env.SUPABASE_ANON_KEY
   );
-  
-  const { data: categories } = await supabase.from('categories').select('slug');
 
+  const { data: categories } = await supabase.from('categories').select('slug');
   const defaultSlugs = SITE_CATEGORIES.map((item) => item.href.replace('/category/', ''));
-  const categorySlugs = [...new Set([...(categories?.map((cat) => cat.slug) ?? []), ...defaultSlugs])];
+  const categorySlugs = [...new Set([...(categories?.map((c) => c.slug) ?? []), ...defaultSlugs])];
 
   return categorySlugs.map((slug) => ({
     params: { category: slug },
-    props: { categorySlug: slug }
+    props: { categorySlug: slug },
   }));
 }
 
@@ -25,88 +102,288 @@ const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPA
 
 const { data: posts } = await supabase
   .from('posts')
-  .select('*, categories!inner(slug, name)')
-  .eq('categories.slug', category)
+  .select('slug, title, description, hero_image, published_at, categories!inner(slug, name)')
   .eq('is_published', true)
+  .eq('categories.slug', category)
   .order('published_at', { ascending: false });
 
-// Get the display name for the category from the first post, or fallback to the slug
 const categoryDisplayName =
-  posts?.[0]?.categories?.name ||
-  category.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  (Array.isArray(posts?.[0]?.categories)
+    ? posts?.[0]?.categories[0]?.name
+    : (posts?.[0]?.categories as { name?: string } | undefined)?.name) ||
+  category.replace(/-/g, ' ').replace(/\b\w/g, (char: string) => char.toUpperCase());
 
-const seoTitle = `${categoryDisplayName} Articles, Tips & Updates | GlobalsBlog`;
-const seoDescription = `Explore ${categoryDisplayName.toLowerCase()} articles, practical tips, news, and fresh updates on GlobalsBlog. Browse the latest stories in one focused archive.`;
+const meta = categoryMeta[category as CategoryKey] ?? {
+  heading: `${categoryDisplayName} Articles, Tips & Updates`,
+  intro: `Browse the full ${categoryDisplayName} archive on GlobalsBlog — fresh stories, practical tips, and the latest updates.`,
+  subtopics: [] as string[],
+  seoTitle: `${categoryDisplayName} Articles, Tips & Updates | GlobalsBlog`,
+  seoDesc: `Explore ${categoryDisplayName.toLowerCase()} articles, practical tips, and fresh updates on GlobalsBlog. Browse the latest stories in one focused archive.`,
+  bullets: [] as string[],
+  exploreLabel: '',
+};
+
+// Related categories (all except current)
+const relatedCategories = SITE_CATEGORIES.filter(
+  (c) => c.href.replace('/category/', '') !== category
+);
+
+const formatDate = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : '';
 ---
 
-<Layout
-  title={seoTitle}
-  description={seoDescription}
->
-  <section class="category-hero">
-    <p class="eyebrow">Category archive</p>
-    <h1>{categoryDisplayName} stories</h1>
-    <p>
-      A focused archive for readers who want to browse {categoryDisplayName} content without distraction.
-    </p>
+<Layout title={meta.seoTitle} description={meta.seoDesc}>
+
+  <!-- HERO -->
+  <section class="cat-hero">
+    <div class="cat-hero-inner">
+      <p class="eyebrow">Category archive</p>
+      <h1>{meta.heading}</h1>
+      <p class="cat-intro">{meta.intro}</p>
+
+      {meta.subtopics.length > 0 && (
+        <div class="subtopic-tags" aria-label="Topics covered in this category">
+          {meta.subtopics.map((tag) => (
+            <span class="subtopic-tag">{tag}</span>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="cat-stats">
+      <div>
+        <strong>{posts?.length ?? 0}</strong>
+        <span>Published articles</span>
+      </div>
+      <div>
+        <strong>{categoryDisplayName}</strong>
+        <span>Category</span>
+      </div>
+      <div>
+        <strong>GlobalsBlog</strong>
+        <span>Editorial platform</span>
+      </div>
+    </div>
   </section>
 
-  <section class="category-grid">
-    {posts?.length ? posts.map((post) => (
-      <article class="category-card">
-        {/* FIX: Link now includes the category parameter */}
-        <a href={`/${category}/${post.slug}`}>
-          {post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
-          <div class="category-card-body">
-            <span>{post.categories?.name ?? categoryDisplayName}</span>
-            <h2>{post.title}</h2>
-          </div>
-        </a>
-      </article>
-    )) : (
-      <div class="empty-state">
-        <h2>No posts found</h2>
-        <p>This category is ready, but there are no published stories in it yet.</p>
+  <!-- POST GRID -->
+  {posts?.length ? (
+    <section class="posts-section" aria-labelledby="posts-heading">
+      <h2 id="posts-heading" class="posts-heading">
+        All {categoryDisplayName} articles
+        <span class="post-count">({posts.length})</span>
+      </h2>
+
+      <div class="posts-grid">
+        {posts.map((post) => {
+          const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories as { name?: string; slug?: string };
+          const catSlug = cat?.slug || category;
+          return (
+            <article class="post-card">
+              <a href={`/${catSlug}/${post.slug}`}>
+                {post.hero_image && (
+                  <img
+                    src={post.hero_image}
+                    alt={post.title}
+                    width="600"
+                    height="338"
+                    loading="lazy"
+                  />
+                )}
+                <div class="post-card-body">
+                  <span class="post-tag">{cat?.name ?? categoryDisplayName}</span>
+                  <h3>{post.title}</h3>
+                  {post.description && <p>{post.description}</p>}
+                  {post.published_at && (
+                    <time class="post-date" datetime={post.published_at}>
+                      {formatDate(post.published_at)}
+                    </time>
+                  )}
+                </div>
+              </a>
+            </article>
+          );
+        })}
       </div>
-    )}
+    </section>
+  ) : (
+    <div class="empty-state">
+      <h2>No articles published yet</h2>
+      <p>This category is ready. Stories will appear here as soon as they are published.</p>
+    </div>
+  )}
+
+  <!-- WHAT YOU'LL FIND (keyword-rich static content) -->
+  {meta.bullets.length > 0 && (
+    <section class="coverage-section" aria-labelledby="coverage-heading">
+      <div class="coverage-inner">
+        <div class="coverage-text">
+          <p class="eyebrow">What we cover</p>
+          <h2 id="coverage-heading">
+            What to expect from {categoryDisplayName} coverage on GlobalsBlog
+          </h2>
+          {meta.exploreLabel && <p class="coverage-lead">{meta.exploreLabel}</p>}
+          <ul class="coverage-list">
+            {meta.bullets.map((bullet) => (
+              <li>{bullet}</li>
+            ))}
+          </ul>
+          <a href="/about" class="coverage-link">About GlobalsBlog →</a>
+        </div>
+
+        <div class="coverage-cta">
+          <p class="eyebrow">Stay updated</p>
+          <h3>New {categoryDisplayName.toLowerCase()} stories added regularly</h3>
+          <p>
+            GlobalsBlog publishes fresh {categoryDisplayName.toLowerCase()} articles across all major
+            subtopics. Bookmark this page or follow via RSS to catch every new story.
+          </p>
+          <a href="/rss.xml" class="rss-link" aria-label="Subscribe to GlobalsBlog RSS feed">
+            Subscribe via RSS →
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- RELATED CATEGORIES -->
+  <section class="related-section" aria-labelledby="related-heading">
+    <p class="eyebrow">Explore more</p>
+    <h2 id="related-heading">More categories on GlobalsBlog</h2>
+    <div class="related-grid">
+      {relatedCategories.map((cat) => (
+        <a href={cat.href} class="related-card">
+          <strong>{cat.label}</strong>
+          <p>{cat.description}</p>
+          <span class="related-cta">Browse {cat.label} →</span>
+        </a>
+      ))}
+    </div>
   </section>
+
 </Layout>
 
 <style>
-  .category-hero {
-    margin-bottom: 1.8rem;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
+  /* ── Hero ── */
+  .cat-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.6fr);
+    gap: 1.4rem;
+    margin-bottom: 2rem;
+  }
+
+  .cat-hero-inner {
+    padding: clamp(1.5rem, 4vw, 2.8rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(circle at top right, rgba(182, 91, 46, 0.1), transparent 20rem),
+      var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .eyebrow {
+    margin-bottom: 0.75rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .cat-hero-inner h1 {
+    font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+    margin-bottom: 1rem;
+    line-height: 1.15;
+  }
+
+  .cat-intro {
+    max-width: 62rem;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1.4rem;
+  }
+
+  .subtopic-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+
+  .subtopic-tag {
+    display: inline-block;
+    padding: 0.35rem 0.8rem;
+    background: rgba(182, 91, 46, 0.08);
+    border: 1px solid rgba(182, 91, 46, 0.2);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent-strong);
+  }
+
+  .cat-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.4rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
     background: var(--card);
     box-shadow: var(--shadow-tight);
   }
 
-  .eyebrow,
-  .category-hero p,
-  .empty-state p {
-    color: var(--muted);
+  .cat-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: rgba(255, 253, 248, 0.7);
   }
 
-  .eyebrow,
-  .category-card-body span {
+  .cat-stats strong {
+    font-size: 1.15rem;
+    color: var(--ink-strong);
+    line-height: 1.2;
+  }
+
+  .cat-stats span {
     font-size: 0.78rem;
-    letter-spacing: 0.18em;
+    color: var(--muted);
     text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
 
-  .eyebrow {
-    color: var(--accent);
+  /* ── Posts ── */
+  .posts-section {
+    margin-bottom: 2.5rem;
   }
 
-  .category-grid {
+  .posts-heading {
+    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+    margin-bottom: 1.3rem;
+    color: var(--ink-strong);
+  }
+
+  .post-count {
+    font-size: 0.85em;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 0.4rem;
+  }
+
+  .posts-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.2rem;
   }
 
-  .category-card a,
-  .empty-state {
+  .post-card a {
     display: block;
     height: 100%;
     overflow: hidden;
@@ -115,41 +392,250 @@ const seoDescription = `Explore ${categoryDisplayName.toLowerCase()} articles, p
     border-radius: var(--radius-lg);
     background: var(--card);
     box-shadow: var(--shadow-tight);
+    transition: transform 180ms ease, box-shadow 180ms ease;
   }
 
-  .category-card a:hover {
+  .post-card a:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow);
   }
 
-  .category-card img {
+  .post-card img {
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
   }
 
-  .category-card-body {
-    padding: 1.2rem;
+  .post-card-body {
+    padding: 1.1rem 1.2rem 1.3rem;
   }
 
-  .category-card-body span {
+  .post-tag {
+    display: inline-block;
+    margin-bottom: 0.55rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
     color: var(--accent-strong);
+    font-weight: 700;
   }
 
-  .category-card-body h2 {
-    margin-top: 0.7rem;
-    font-size: 1.45rem;
+  .post-card-body h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.12rem;
+    line-height: 1.3;
+    color: var(--ink-strong);
   }
 
+  .post-card-body p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-date {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* ── Empty state ── */
   .empty-state {
-    padding: 2rem;
+    padding: 2.5rem 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
     text-align: center;
-    grid-column: 1 / -1;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  /* ── Coverage section ── */
+  .coverage-section {
+    margin: 2.5rem 0;
+    padding: clamp(1.8rem, 4vw, 3rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(circle at top left, rgba(210, 124, 67, 0.1), transparent 24rem),
+      var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .coverage-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .coverage-text h2 {
+    font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+    margin-bottom: 0.6rem;
+    line-height: 1.2;
+  }
+
+  .coverage-lead {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .coverage-list {
+    margin: 0 0 1.5rem;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .coverage-list li {
+    font-size: 0.96rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .coverage-link {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms;
+  }
+
+  .coverage-link:hover {
+    border-color: var(--accent-strong);
+  }
+
+  .coverage-cta {
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 253, 248, 0.8);
+  }
+
+  .coverage-cta h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.65rem;
+    line-height: 1.3;
+    color: var(--ink-strong);
+  }
+
+  .coverage-cta p {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+
+  .rss-link {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms;
+  }
+
+  .rss-link:hover {
+    border-color: var(--accent-strong);
+  }
+
+  /* ── Related categories ── */
+  .related-section {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .related-section h2 {
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    margin-bottom: 1.2rem;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+
+  .related-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+    text-decoration: none;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .related-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .related-card strong {
+    font-size: 1.05rem;
+    color: var(--ink-strong);
+  }
+
+  .related-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+    flex: 1;
+  }
+
+  .related-cta {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    margin-top: 0.3rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1000px) {
+    .cat-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .cat-stats {
+      flex-direction: row;
+    }
+
+    .cat-stats div {
+      flex: 1;
+    }
+
+    .coverage-inner {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
   }
 
   @media (max-width: 860px) {
-    .category-grid {
+    .posts-grid,
+    .related-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .posts-grid,
+    .related-grid,
+    .cat-stats {
       grid-template-columns: 1fr;
+      flex-direction: column;
     }
   }
 </style>

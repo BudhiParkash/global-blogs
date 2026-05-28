@@ -1,0 +1,169 @@
+---
+// src/components/CookieConsent.astro
+// GDPR / CCPA compliant cookie consent banner.
+// Shown on first visit; preference stored in localStorage.
+---
+
+<div
+  class="cookie-banner"
+  id="cookie-banner"
+  role="dialog"
+  aria-modal="false"
+  aria-label="Cookie consent"
+  hidden
+>
+  <div class="cookie-inner">
+    <div class="cookie-text">
+      <strong>We use cookies</strong>
+      <p>
+        GlobalsBlog uses cookies for analytics (Google Analytics) and personalised advertising
+        (Google AdSense). By clicking <em>Accept All</em> you consent to these cookies.
+        You can decline non-essential cookies without losing access to any content.
+        <a href="/privacy-policy">Read our Privacy Policy</a>
+      </p>
+    </div>
+
+    <div class="cookie-actions">
+      <button id="cookie-decline" class="cookie-btn-outline" type="button">
+        Decline
+      </button>
+      <button id="cookie-accept" class="cookie-btn-primary" type="button">
+        Accept All
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CONSENT_KEY = 'gb_cookie_consent';
+  const banner = document.getElementById('cookie-banner') as HTMLElement | null;
+
+  // Show only if no stored choice
+  if (!localStorage.getItem(CONSENT_KEY)) {
+    // Small delay so the page paints first
+    setTimeout(() => banner?.removeAttribute('hidden'), 600);
+  }
+
+  document.getElementById('cookie-accept')?.addEventListener('click', () => {
+    localStorage.setItem(CONSENT_KEY, 'accepted');
+    banner?.setAttribute('hidden', '');
+  });
+
+  document.getElementById('cookie-decline')?.addEventListener('click', () => {
+    localStorage.setItem(CONSENT_KEY, 'declined');
+    banner?.setAttribute('hidden', '');
+  });
+</script>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: rgba(28, 23, 19, 0.96);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1rem 0;
+  }
+
+  .cookie-inner {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .cookie-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cookie-text strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #fff7ef;
+    margin-bottom: 0.3rem;
+  }
+
+  .cookie-text p {
+    margin: 0;
+    font-size: 0.84rem;
+    color: rgba(255, 247, 239, 0.6);
+    line-height: 1.55;
+  }
+
+  .cookie-text a {
+    color: #d97c48;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .cookie-text em {
+    font-style: normal;
+    color: rgba(255, 247, 239, 0.85);
+  }
+
+  .cookie-actions {
+    display: flex;
+    gap: 0.7rem;
+    flex: 0 0 auto;
+  }
+
+  .cookie-btn-primary,
+  .cookie-btn-outline {
+    min-height: 40px;
+    padding: 0.55rem 1.2rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity 180ms ease, transform 180ms ease;
+    white-space: nowrap;
+  }
+
+  .cookie-btn-primary {
+    background: #b65b2e;
+    color: #fff7ef;
+    border-color: #b65b2e;
+  }
+
+  .cookie-btn-outline {
+    background: transparent;
+    color: rgba(255, 247, 239, 0.65);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .cookie-btn-primary:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  .cookie-btn-outline:hover {
+    opacity: 0.85;
+  }
+
+  @media (max-width: 600px) {
+    .cookie-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .cookie-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+    }
+
+    .cookie-btn-primary,
+    .cookie-btn-outline {
+      text-align: center;
+    }
+  }
+</style>

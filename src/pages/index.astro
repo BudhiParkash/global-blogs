@@ -2,337 +2,590 @@
 import Layout from '../layouts/Layout.astro';
 import { createClient } from '@supabase/supabase-js';
 import { SITE_CATEGORIES } from '../consts';
-import { Image } from 'astro:assets';
 
 const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY);
 
-const { data: posts } = await supabase
+// Step 1 — featured post (most recent, any category)
+const { data: featuredPost } = await supabase
   .from('posts')
-  .select('*, categories(name)')
+  .select('slug, title, description, hero_image, published_at, categories(name)')
   .eq('is_published', true)
   .order('published_at', { ascending: false })
-  .limit(6);
+  .limit(1)
+  .single();
 
-const featuredPost = posts?.[0];
-const latestPosts = posts?.slice(1) ?? [];
+// Step 2 — latest 3 per category, excluding the featured post
+const fetchCategory = (slug: string) =>
+  supabase
+    .from('posts')
+    .select('slug, title, description, hero_image, published_at, categories!inner(name, slug)')
+    .eq('is_published', true)
+    .eq('categories.slug', slug)
+    .neq('slug', featuredPost?.slug ?? '')
+    .order('published_at', { ascending: false })
+    .limit(3);
 
-// Define the shape of your data
+const [
+  { data: travelPosts },
+  { data: autoPosts },
+  { data: beautyPosts },
+  { data: newsPosts },
+] = await Promise.all([
+  fetchCategory('travel'),
+  fetchCategory('auto'),
+  fetchCategory('beauty'),
+  fetchCategory('news'),
+]);
+
+// Category section metadata with keyword-rich headings
+const categorySections = [
+  {
+    slug: 'travel',
+    label: 'Travel',
+    id: 'travel',
+    heading: 'Travel Guides, Budget Travel Tips & Destination Itineraries',
+    description:
+      'From solo travel hacks and honeymoon packages to budget destination guides and adventure itineraries — all in one focused archive.',
+    posts: travelPosts ?? [],
+  },
+  {
+    slug: 'auto',
+    label: 'Auto',
+    id: 'auto',
+    heading: 'Car Reviews, Best Mileage Cars & Auto Buying Guides',
+    description:
+      'Discover the best mileage cars, read expert buying guides, compare SUVs, get fuel efficiency tips, and follow the latest auto industry news.',
+    posts: autoPosts ?? [],
+  },
+  {
+    slug: 'beauty',
+    label: 'Beauty',
+    id: 'beauty',
+    heading: 'Skincare Routines, Makeup Tutorials & Beauty Tips',
+    description:
+      'Easy makeup tutorials, skincare routines for every skin type, ingredient guides for niacinamide, retinol, and vitamin C, and the latest beauty trends.',
+    posts: beautyPosts ?? [],
+  },
+  {
+    slug: 'news',
+    label: 'News',
+    id: 'news',
+    heading: 'Latest News, Trending Topics & Current Events',
+    description:
+      'Timely coverage of trending topics, technology news, health and wellness updates, and global stories that matter.',
+    posts: newsPosts ?? [],
+  },
+];
+
 interface Post {
   slug: string;
-  categories: { name: string } | { name: string }[];
+  title: string;
+  description?: string;
+  hero_image?: string;
+  published_at?: string;
+  categories: { name: string; slug?: string } | { name: string; slug?: string }[];
 }
 
-// Helper function to generate URLs consistently
 const getPostUrl = (post: Post) => {
-    const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-    const categorySlug = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
-    return `/${categorySlug}/${post.slug}`;
+  const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+  const catSlug = cat?.slug || cat?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+  return `/${catSlug}/${post.slug}`;
 };
+
+const formatDate = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : '';
 ---
 
 <Layout
-    title="GlobalsBlog | Travel, Auto, Beauty & News Articles"
-    description="Discover travel, auto, beauty, and news articles on GlobalsBlog. Browse fresh stories, practical tips, and category-focused updates in one place."
+  title="GlobalsBlog | Travel, Auto, Beauty & News Articles"
+  description="Discover travel, auto, beauty, and news articles on GlobalsBlog. Browse fresh stories, practical tips, and category-focused updates in one place."
 >
-    <!-- HERO SECTION (Remains same) -->
-    <section class="hero">
-        <div class="hero-copy">
-            <p class="eyebrow">Editorial blog platform</p>
-            <h1>Readable stories designed for discovery, not clutter.</h1>
-            <p class="hero-text">
-                GlobalsBlog organizes category-driven stories across travel, auto, beauty, and modern
-                lifestyle with a cleaner reading experience.
-            </p>
-            <div class="hero-actions">
-                <a class="button-primary" href="#latest">Read latest</a>
-                <a class="button-secondary" href="/about">About the site</a>
-            </div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Travel · Auto · Beauty · News</p>
+      <h1>Fresh stories across travel, auto, beauty, and news.</h1>
+      <p class="hero-text">
+        GlobalsBlog publishes practical, easy-to-read articles across travel, auto, beauty, and news
+        so readers can explore every topic in one well-organised place.
+      </p>
+      <div class="hero-actions">
+        <a class="button-primary" href="#travel">Browse by topic</a>
+        <a class="button-secondary" href="/about">About the site</a>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <p class="panel-label">Browse categories</p>
+      <div class="category-pills">
+        {SITE_CATEGORIES.map((item) => (
+          <a href={`#${item.label.toLowerCase()}`} aria-label={`Jump to ${item.label} articles`}>
+            {item.label}
+          </a>
+        ))}
+      </div>
+      <p class="panel-copy">
+        Each category keeps its archive focused — easier to scan and stronger for search-led discovery.
+      </p>
+    </div>
+  </section>
+
+  <!-- FEATURED STORY -->
+  {featuredPost && (
+    <section class="featured-story" aria-label="Featured article">
+      <a class="featured-card" href={getPostUrl(featuredPost)}>
+        <div class="featured-content">
+          <p class="eyebrow">Featured story</p>
+          <span class="story-tag">
+            {(Array.isArray(featuredPost.categories)
+              ? featuredPost.categories[0]
+              : featuredPost.categories)?.name ?? 'Latest'}
+          </span>
+          <h2>{featuredPost.title}</h2>
+          <p>{featuredPost.description || ''}</p>
+          {featuredPost.published_at && (
+            <time class="card-date" datetime={featuredPost.published_at}>
+              {formatDate(featuredPost.published_at)}
+            </time>
+          )}
         </div>
-
-        <div class="hero-panel">
-            <p class="panel-label">Browse categories</p>
-            <div class="category-pills">
-                {SITE_CATEGORIES.map((item) => (
-                    <a href={item.href}>{item.label}</a>
-                ))}
-            </div>
-            <p class="panel-copy">
-                Each section keeps the archive focused, easier to scan, and stronger for search-led discovery.
-            </p>
-        </div>
-    </section>
-
-    {featuredPost && (
-        <section class="featured-story">
-            <!-- FIX 1: Updated Featured Post Link -->
-            <a class="featured-card" href={getPostUrl(featuredPost)}>
-                <div class="featured-content">
-                    <p class="eyebrow">Featured story</p>
-                    <span class="story-tag">{featuredPost.categories?.name ?? 'Latest'}</span>
-                    <h2>{featuredPost.title}</h2>
-                    <p>
-                        {featuredPost.excerpt ??
-                            'Explore the latest article from the newsroom with a full-width lead layout built for engagement.'}
-                    </p>
-                </div>
-
-                {featuredPost.hero_image && (
-                    <img src={featuredPost.hero_image} alt={featuredPost.title} loading="eager" />
-                )}
-            </a>
-        </section>
-    )}
-
-    <section class="latest-section" id="latest">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Latest posts</p>
-                <h2>Recent stories across every category</h2>
-            </div>
-            <p>Clear cards, stronger hierarchy, and faster content scanning for readers.</p>
-        </div>
-
-        <div class="story-grid">
-            {latestPosts.map((post) => {
-                // FIX 2: Added 'return' statement inside map
-                return (
-                    <article class="story-card">
-                        <a href={getPostUrl(post)}>
-                            {post.hero_image && <img src={post.hero_image} alt={post.title} loading="lazy" />}
-                            <div class="story-card-body">
-                                <span class="story-tag">{post.categories?.name ?? 'Story'}</span>
-                                <h3>{post.title}</h3>
-                                <p>
-                                    {post.excerpt ??
-                                        'Open the full article for a cleaner reading layout and category-based navigation.'}
-                                </p>
-                            </div>
-                        </a>
-                    </article>
-                );
-            })}
-        </div>
-
-        {!posts?.length && (
-            <div class="empty-state">
-                <h3>No published posts yet</h3>
-                <p>Once posts are available in Supabase, they will appear here automatically.</p>
-            </div>
+        {featuredPost.hero_image && (
+          <img
+            src={featuredPost.hero_image}
+            alt={featuredPost.title}
+            width="800"
+            height="500"
+            loading="eager"
+            fetchpriority="high"
+          />
         )}
+      </a>
     </section>
+  )}
+
+  <!-- CATEGORY SHOWCASE -->
+  <section class="category-showcase" aria-labelledby="categories-heading">
+    <div class="showcase-heading">
+      <p class="eyebrow">What we cover</p>
+      <h2 id="categories-heading">Browse by topic</h2>
+    </div>
+    <div class="showcase-grid">
+      {SITE_CATEGORIES.map((cat) => (
+        <a href={`/category/${cat.label.toLowerCase()}`} class="showcase-card">
+          <strong>{cat.label}</strong>
+          <p>{cat.description}</p>
+          <span class="showcase-cta">Read {cat.label} articles →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- PER-CATEGORY SECTIONS -->
+  {categorySections.map((section) => (
+    <section class="cat-section" id={section.id} aria-labelledby={`${section.id}-heading`}>
+      <div class="cat-section-header">
+        <div class="cat-section-meta">
+          <p class="eyebrow">Latest {section.label}</p>
+          <h2 id={`${section.id}-heading`}>{section.heading}</h2>
+          <p class="cat-section-desc">{section.description}</p>
+        </div>
+        <a href={`/category/${section.slug}`} class="view-all-link" aria-label={`View all ${section.label} articles`}>
+          View all {section.label} →
+        </a>
+      </div>
+
+      {section.posts.length > 0 ? (
+        <div class="cat-grid">
+          {section.posts.map((post) => {
+            const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+            return (
+              <article class="cat-card">
+                <a href={getPostUrl(post)}>
+                  {post.hero_image && (
+                    <img
+                      src={post.hero_image}
+                      alt={post.title}
+                      width="600"
+                      height="375"
+                      loading="lazy"
+                    />
+                  )}
+                  <div class="cat-card-body">
+                    <span class="story-tag">{cat?.name ?? section.label}</span>
+                    <h3>{post.title}</h3>
+                    <p>{post.description || ''}</p>
+                    {post.published_at && (
+                      <time class="card-date" datetime={post.published_at}>
+                        {formatDate(post.published_at)}
+                      </time>
+                    )}
+                  </div>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="cat-empty">
+          <p>No {section.label.toLowerCase()} articles published yet. Check back soon.</p>
+        </div>
+      )}
+    </section>
+  ))}
 </Layout>
 
 <style>
-	.hero {
-		display: grid;
-		grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
-		gap: 1.5rem;
-		align-items: stretch;
-		padding: 1rem 0 2rem;
-	}
+  /* ── Hero ── */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+    gap: 1.5rem;
+    align-items: stretch;
+    padding: 1rem 0 2rem;
+  }
 
-	.hero-copy,
-	.hero-panel,
-	.featured-card,
-	.story-card a,
-	.empty-state {
-		border: 1px solid var(--line);
-		background: var(--card);
-		box-shadow: var(--shadow-tight);
-	}
+  .hero-copy,
+  .hero-panel,
+  .featured-card,
+  .cat-card a {
+    border: 1px solid var(--line);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+  }
 
-	.hero-copy {
-		padding: clamp(1.5rem, 4vw, 3rem);
-		border-radius: var(--radius-xl);
-	}
+  .hero-copy {
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border-radius: var(--radius-xl);
+  }
 
-	.hero-text {
-		max-width: 46rem;
-		font-size: 1.08rem;
-		color: var(--muted);
-	}
+  .hero-text {
+    max-width: 46rem;
+    font-size: 1.08rem;
+    color: var(--muted);
+  }
 
-	.hero-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.8rem;
-		margin-top: 1.5rem;
-	}
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+  }
 
-	.button-primary,
-	.button-secondary,
-	.category-pills a {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		text-decoration: none;
-		border-radius: 999px;
-	}
+  .button-primary,
+  .button-secondary,
+  .category-pills a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 999px;
+  }
 
-	.button-primary,
-	.button-secondary {
-		padding: 0.82rem 1.2rem;
-	}
+  .button-primary,
+  .button-secondary {
+    padding: 0.82rem 1.2rem;
+  }
 
-	.button-primary {
-		background: var(--ink-strong);
-		color: #fff7ef;
-	}
+  .button-primary {
+    background: var(--ink-strong);
+    color: #fff7ef;
+  }
 
-	.button-primary:hover {
-		color: #fff7ef;
-		transform: translateY(-1px);
-	}
+  .button-primary:hover {
+    color: #fff7ef;
+    transform: translateY(-1px);
+  }
 
-	.button-secondary {
-		border: 1px solid var(--line);
-		color: var(--ink-strong);
-		background: rgba(255, 255, 255, 0.55);
-	}
+  .button-secondary {
+    border: 1px solid var(--line);
+    color: var(--ink-strong);
+    background: rgba(255, 255, 255, 0.55);
+  }
 
-	.hero-panel {
-		border-radius: var(--radius-xl);
-		padding: 1.5rem;
-		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(239, 228, 213, 0.95));
-	}
+  .hero-panel {
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(239, 228, 213, 0.95));
+  }
 
-	.panel-label,
-	.panel-copy,
-	.section-heading p,
-	.story-card-body p,
-	.featured-content p,
-	.empty-state p {
-		color: var(--muted);
-	}
+  .panel-label {
+    margin-bottom: 1rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-	.panel-label {
-		margin-bottom: 1rem;
-		font-size: 0.78rem;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-	}
+  .panel-copy {
+    color: var(--muted);
+    margin-top: 1rem;
+  }
 
-	.category-pills {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-	}
+  .category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
 
-	.category-pills a {
-		padding: 0.75rem 1rem;
-		background: rgba(255, 255, 255, 0.78);
-		color: var(--ink-strong);
-		border: 1px solid rgba(68, 52, 39, 0.09);
-	}
+  .category-pills a {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--ink-strong);
+    border: 1px solid rgba(68, 52, 39, 0.09);
+  }
 
-	.featured-story,
-	.latest-section {
-		margin-top: 1.5rem;
-	}
+  /* ── Shared ── */
+  .eyebrow {
+    margin-bottom: 0.75rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
 
-	.featured-card {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(280px, 0.95fr);
-		gap: 1.4rem;
-		padding: 1.25rem;
-		border-radius: var(--radius-xl);
-		text-decoration: none;
-	}
+  .story-tag {
+    display: inline-block;
+    margin-bottom: 0.7rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
 
-	.featured-content {
-		padding: 0.6rem;
-	}
+  .card-date {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
 
-	.featured-card img {
-		width: 100%;
-		height: 100%;
-		min-height: 320px;
-		object-fit: cover;
-		border-radius: calc(var(--radius-xl) - 10px);
-	}
+  /* ── Featured ── */
+  .featured-story {
+    margin-top: 1.5rem;
+  }
 
-	.eyebrow,
-	.story-tag {
-		font-size: 0.78rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-	}
+  .featured-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.95fr);
+    gap: 1.4rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
 
-	.eyebrow {
-		margin-bottom: 1rem;
-		color: var(--accent);
-	}
+  .featured-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
 
-	.story-tag {
-		display: inline-block;
-		margin-bottom: 0.8rem;
-		color: var(--accent-strong);
-	}
+  .featured-content {
+    padding: 0.6rem;
+  }
 
-	.section-heading {
-		display: flex;
-		align-items: end;
-		justify-content: space-between;
-		gap: 1rem;
-		margin-bottom: 1.5rem;
-	}
+  .featured-content p:not(.eyebrow) {
+    color: var(--muted);
+  }
 
-	.section-heading p {
-		max-width: 34rem;
-		margin: 0;
-	}
+  .featured-card img {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    object-fit: cover;
+    border-radius: calc(var(--radius-xl) - 10px);
+  }
 
-	.story-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 1.2rem;
-	}
+  .featured-content h2 {
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+  }
 
-	.story-card a {
-		display: block;
-		height: 100%;
-		border-radius: var(--radius-lg);
-		overflow: hidden;
-		text-decoration: none;
-	}
+  /* ── Category showcase ── */
+  .category-showcase {
+    margin-top: 2rem;
+  }
 
-	.story-card a:hover,
-	.featured-card:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow);
-	}
+  .showcase-heading {
+    margin-bottom: 1.2rem;
+  }
 
-	.story-card img {
-		width: 100%;
-		aspect-ratio: 16 / 10;
-		object-fit: cover;
-	}
+  .showcase-heading h2 {
+    margin-bottom: 0;
+  }
 
-	.story-card-body {
-		padding: 1.2rem;
-	}
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
 
-	.story-card-body h3 {
-		font-size: 1.35rem;
-	}
+  .showcase-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.3rem 1.2rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+    text-decoration: none;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
 
-	.empty-state {
-		padding: 2rem;
-		border-radius: var(--radius-lg);
-		text-align: center;
-	}
+  .showcase-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
 
-	@media (max-width: 960px) {
-		.hero,
-		.featured-card,
-		.story-grid {
-			grid-template-columns: 1fr;
-		}
+  .showcase-card strong {
+    font-size: 1.1rem;
+    color: var(--ink-strong);
+  }
 
-		.section-heading {
-			align-items: flex-start;
-			flex-direction: column;
-		}
-	}
+  .showcase-card p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.55;
+    flex: 1;
+  }
+
+  .showcase-cta {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    margin-top: 0.4rem;
+  }
+
+  /* ── Per-category sections ── */
+  .cat-section {
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .cat-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cat-section-meta h2 {
+    font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .cat-section-desc {
+    margin: 0;
+    max-width: 58rem;
+    font-size: 0.96rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .view-all-link {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms ease;
+    padding-bottom: 1px;
+  }
+
+  .view-all-link:hover {
+    border-color: var(--accent-strong);
+  }
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .cat-card a {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .cat-card a:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .cat-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  .cat-card-body {
+    padding: 1.1rem 1.2rem 1.3rem;
+  }
+
+  .cat-card-body h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.18rem;
+    line-height: 1.3;
+    color: var(--ink-strong);
+  }
+
+  .cat-card-body p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cat-empty {
+    padding: 1.5rem;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-lg);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 960px) {
+    .hero,
+    .featured-card {
+      grid-template-columns: 1fr;
+    }
+
+    .showcase-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cat-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cat-section-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .showcase-grid,
+    .cat-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>

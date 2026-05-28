@@ -3,13 +3,15 @@
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import CookieConsent from '../components/CookieConsent.astro';
 
 interface Props {
     title: string;
     description?: string;
-    image?: string; 
+    image?: string;
 
     articleDate?: string;
+    articleModified?: string;
     authorName?: string;
     authorUrl?: string;
     authorBio?: string;
@@ -19,11 +21,12 @@ interface Props {
     isAuthorProfile?: boolean;
 }
 
-const { 
-    title, 
-    description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.', 
-    image ,
+const {
+    title,
+    description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.',
+    image,
     articleDate,
+    articleModified,
     authorName,
     authorUrl,
     authorBio,
@@ -53,6 +56,7 @@ const {
         
         <!-- FIX: Pass the 'image' prop here so BaseHead can use it for OG/Twitter -->
         <BaseHead title={title} description={description} image={image} articleDate={articleDate}
+            articleModified={articleModified}
             authorName={authorName}
             authorUrl={authorUrl}
             authorBio={authorBio}
@@ -68,5 +72,6 @@ const {
             <slot />
         </main>
         <Footer />
+        <CookieConsent />
     </body>
 </html>

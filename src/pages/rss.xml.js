@@ -1,5 +1,6 @@
 import rss from '@astrojs/rss';
 import { createClient } from '@supabase/supabase-js';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
 export async function GET(context) {
   const supabase = createClient(
@@ -15,8 +16,8 @@ export async function GET(context) {
     .order('published_at', { ascending: false });
 
   return rss({
-    title: 'GlobalsBlog',
-    description: 'Latest News in Travel, Auto, and Beauty',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     site: context.site,
 
     trailingSlash: false,

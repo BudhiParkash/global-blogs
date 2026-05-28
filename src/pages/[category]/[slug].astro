@@ -73,6 +73,20 @@ const authorProfileUrl = post.author?.name
   : null;
 const clientSupabaseUrl = import.meta.env.SUPABASE_URL;
 const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
+
+const { category: categoryParam } = Astro.params;
+
+const { data: relatedPosts } = await supabase
+  .from('posts')
+  .select('slug, title, hero_image, description, categories(name)')
+  .eq('is_published', true)
+  .neq('slug', slug)
+  .limit(10);
+
+const related = (relatedPosts ?? []).filter((p) => {
+  const cat = Array.isArray(p.categories) ? p.categories[0] : p.categories;
+  return cat?.name?.toLowerCase().replace(/\s+/g, '-') === categoryParam;
+}).slice(0, 10);
 ---
 
 <Layout
@@ -80,6 +94,7 @@ const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
   description={post.description ?? `Read ${post.title} on GlobalsBlog.`}
   image={post.hero_image}
   articleDate={post.published_at}
+  articleModified={post.updated_at ?? post.published_at}
   authorName={post.author?.name}
   authorUrl={post.author?.handle_link}
   category={categoryName}
@@ -221,6 +236,31 @@ const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
           </div>
         </div>
       </footer>
+    )}
+
+    {related.length > 0 && (
+      <aside class="related-posts" aria-labelledby="related-title">
+        <p class="related-eyebrow">More in {categoryName}</p>
+        <h2 id="related-title">Related stories</h2>
+        <div class="related-grid">
+          {related.map((rp) => {
+            const rCat = Array.isArray(rp.categories) ? rp.categories[0] : rp.categories;
+            const rCatSlug = rCat?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+            return (
+              <a href={`/${rCatSlug}/${rp.slug}`} class="related-card">
+                {rp.hero_image && (
+                  <img src={rp.hero_image} alt={rp.title} width="400" height="250" loading="lazy" />
+                )}
+                <div class="related-card-body">
+                  <span class="related-tag">{rCat?.name ?? categoryName}</span>
+                  <h3>{rp.title}</h3>
+                  <p>{ rp.description || ''}</p>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </aside>
     )}
   </article>
 </Layout>
@@ -452,6 +492,79 @@ const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 	    .author-content { flex-direction: column; text-align: center; }
 	    .author-card { padding: 2rem 1.5rem; }
 	  }
+
+  /* Related posts */
+  .related-posts {
+    margin-top: 4rem;
+  }
+  .related-eyebrow {
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .related-posts > h2 {
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.45rem, 3vw, 2rem);
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+  .related-card {
+    display: block;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+    overflow: hidden;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+  .related-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .related-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+  .related-card-body {
+    padding: 1rem 1.1rem 1.2rem;
+  }
+  .related-tag {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+  .related-card-body h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    color: var(--ink-strong);
+  }
+  .related-card-body p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  @media (max-width: 700px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 	</style>
 
 <script>

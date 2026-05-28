@@ -13,7 +13,7 @@ const legalLinks = [
 	<div class="shell footer-shell">
 		<div>
 			<p class="footer-eyebrow">Global editorial platform</p>
-			<h2>{SITE_TITLE}</h2>
+			<p class="footer-brand"><strong>{SITE_TITLE}</strong></p>
 			<p class="footer-copy">{SITE_DESCRIPTION}</p>
 		</div>
 
@@ -83,7 +83,14 @@ const legalLinks = [
 		text-transform: uppercase;
 	}
 
-	h2,
+	.footer-brand {
+		margin: 0 0 0.9rem;
+		font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+		line-height: 1.08;
+		letter-spacing: -0.03em;
+		color: var(--ink-strong);
+	}
+
 	h3 {
 		margin: 0 0 0.9rem;
 	}

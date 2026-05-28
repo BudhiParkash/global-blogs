@@ -1,0 +1,10 @@
+# ads.txt — GlobalsBlog
+# Required by Google AdSense and all programmatic ad networks.
+# After your AdSense account is approved, replace the placeholder below
+# with your real Publisher ID (format: pub-XXXXXXXXXXXXXXXX).
+#
+# How to find your Publisher ID:
+# AdSense dashboard → Account → Account information → Publisher ID
+#
+# Uncomment and update the line below after approval:
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
