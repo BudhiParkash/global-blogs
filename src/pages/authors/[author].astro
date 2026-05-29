@@ -7,10 +7,7 @@ const supabase = createClient(
   import.meta.env.SUPABASE_ANON_KEY
 );
 
-type Category = {
-  slug?: string;
-  name?: string;
-};
+type Category = { slug?: string; name?: string };
 
 type Author = {
   id?: string;
@@ -19,82 +16,82 @@ type Author = {
   avatar_url?: string;
   twitter_handle?: string;
   handle_link?: string;
-};
-
-type AuthorPathPost = {
-  author_id?: string;
-  author?: Author | Author[];
+  // New E-E-A-T columns (add via SQL — gracefully null if missing)
+  job_title?: string;
+  expertise?: string;   // comma-separated e.g. "Travel, Budget Travel, Solo Travel"
+  location?: string;
 };
 
 type AuthorPost = {
   slug: string;
   title: string;
-  excerpt?: string;
   description?: string;
   hero_image?: string;
   published_at?: string;
   categories?: Category | Category[];
 };
 
-function slugify(value: string = '') {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+function slugify(value = '') {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function getSingle<T>(value: T | T[] | null | undefined) {
+function getSingle<T>(value: T | T[] | null | undefined): T | null | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
 function getPostUrl(post: AuthorPost) {
-  const category = getSingle(post.categories);
-  const categorySlug = category?.slug || slugify(category?.name || 'blog');
-
-  return `/${categorySlug}/${post.slug}`;
+  const cat = getSingle(post.categories);
+  const catSlug = cat?.slug || slugify(cat?.name || 'blog');
+  return `/${catSlug}/${post.slug}`;
 }
 
+const formatDate = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : '';
+
 export async function getStaticPaths() {
-  const slugifyAuthor = (value: string = '') =>
-    value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-  const getSingleAuthor = <T,>(value: T | T[] | null | undefined) =>
-    Array.isArray(value) ? value[0] : value;
+  const slugify = (value = '') =>
+    value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
   const supabase = createClient(
     import.meta.env.SUPABASE_URL,
     import.meta.env.SUPABASE_ANON_KEY
   );
 
-  const { data: posts } = await supabase
+  // Try with E-E-A-T columns; fall back if they haven't been added via SQL yet
+  let { data: posts, error } = await supabase
     .from('posts')
     .select(`
       author_id,
       author:author_id (
-        id,
-        name,
-        bio,
-        avatar_url,
-        twitter_handle,
-        handle_link
+        id, name, bio, avatar_url,
+        twitter_handle, handle_link,
+        job_title, expertise, location
       )
     `)
     .eq('is_published', true);
 
+  if (error || !posts) {
+    ({ data: posts } = await supabase
+      .from('posts')
+      .select(`
+        author_id,
+        author:author_id (
+          id, name, bio, avatar_url,
+          twitter_handle, handle_link
+        )
+      `)
+      .eq('is_published', true));
+  }
+
   const authorsBySlug = new Map<string, Author>();
 
-  posts?.forEach((post: AuthorPathPost) => {
-    const author = getSingleAuthor(post.author);
-    const authorSlug = slugifyAuthor(author?.name || '');
-
-    if (authorSlug && !authorsBySlug.has(authorSlug)) {
-      authorsBySlug.set(authorSlug, {
-        ...author,
-        id: author?.id || post.author_id,
-      });
+  posts?.forEach((post: { author_id?: string; author?: Author | Author[] }) => {
+    const author = Array.isArray(post.author) ? post.author[0] : post.author;
+    const slug = slugify(author?.name || '');
+    if (slug && !authorsBySlug.has(slug)) {
+      authorsBySlug.set(slug, { ...author, id: author?.id || post.author_id });
     }
   });
 
@@ -104,24 +101,142 @@ export async function getStaticPaths() {
   }));
 }
 
-const { author: authorSlug } = Astro.params;
+const authorSlug = Astro.params.author;
 const { author } = Astro.props;
 
 if (!author) return Astro.redirect('/404');
 
 const { data: posts } = await supabase
   .from('posts')
-  .select('*, categories(slug, name)')
+  .select('slug, title, description, hero_image, published_at, categories(slug, name)')
   .eq('author_id', author.id)
   .eq('is_published', true)
   .order('published_at', { ascending: false });
 
+// ── Derived E-E-A-T data ────────────────────────────────────────────
+
+// Category breakdown for topical authority signal
+const categoryCounts: Record<string, number> = {};
+posts?.forEach((post) => {
+  const cat = getSingle(post.categories);
+  if (cat?.name) categoryCounts[cat.name] = (categoryCounts[cat.name] || 0) + 1;
+});
+const sortedCategories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
+const topCategory = sortedCategories[0]?.[0] ?? null;
+const expertiseAreas = sortedCategories.map(([name]) => name);
+
+// Expertise tags: use the DB column if filled, else derive from posts
+const expertiseTags: string[] = author.expertise
+  ? author.expertise.split(',').map((s: string) => s.trim()).filter(Boolean)
+  : expertiseAreas;
+
+// Per-category expertise content — specific bullets for each topic
+const categoryExpertise: Record<string, { intro: string; bullets: string[] }> = {
+  Travel: {
+    intro:
+      'Travel coverage focuses on making every journey practical, affordable, and memorable — from first-time trips to seasoned adventures.',
+    bullets: [
+      'Destination guides covering popular and off-beat locations across Asia, Europe, and beyond',
+      'Budget travel tips and cost-saving hacks for domestic and international trips',
+      'Solo travel advice including safety, itinerary planning, and accommodation picks',
+      'Honeymoon, couple, and family travel ideas with destination recommendations',
+      'Practical guides covering visa requirements, packing lists, and flight booking tips',
+      'Adventure travel, trekking routes, and outdoor experience guides',
+    ],
+  },
+  Auto: {
+    intro:
+      'Auto coverage helps readers make smarter car decisions with honest, data-backed comparisons and ownership advice for Indian roads.',
+    bullets: [
+      'Car reviews covering performance, fuel efficiency, comfort, and real-world value',
+      'Best mileage cars in India — petrol, diesel, CNG, and electric comparisons',
+      'First-time buyer and upgrade guides across hatchback, sedan, and SUV segments',
+      'Car maintenance tips: service intervals, tyre care, battery health, and running costs',
+      'Electric vehicle (EV) and CNG car guides with charging, range, and cost breakdowns',
+      'Latest auto industry news, upcoming launches, and price update coverage',
+    ],
+  },
+  Beauty: {
+    intro:
+      'Beauty coverage is grounded in real products, proven ingredients, and skin-type-specific routines that work for everyday readers.',
+    bullets: [
+      'Skincare routines tailored for Indian skin — dry, oily, combination, and sensitive types',
+      'Step-by-step makeup tutorials from 5-minute everyday looks to full occasion glam',
+      'Ingredient breakdowns — niacinamide, retinol, vitamin C, hyaluronic acid, and SPF',
+      'Acne treatment guides, dark spot removal tips, and skin barrier repair advice',
+      'Trending beauty topics: skin cycling, slugging, barrier repair, and microbiome skincare',
+      'Honest product reviews and best-of lists across drugstore and premium beauty brands',
+    ],
+  },
+  News: {
+    intro:
+      'News coverage delivers timely, readable stories on topics that matter — explained clearly without jargon for a broad audience.',
+    bullets: [
+      'Trending topics and current events reported clearly and without bias',
+      'Technology news including AI developments, gadget releases, and digital lifestyle shifts',
+      'Health and wellness updates covering fitness, nutrition, and mental wellbeing',
+      'Global events and geopolitical developments explained for everyday readers',
+      'Business and consumer news relevant to daily financial and lifestyle decisions',
+      'Lifestyle and culture stories connecting modern living with broader world events',
+    ],
+  },
+};
+
+// Job title: DB column or derive from top category
+const jobTitle =
+  author.job_title ||
+  (topCategory ? `${topCategory} Writer` : 'Contributing Writer');
+
+// Writing since (year of oldest article)
+const writingSince =
+  posts && posts.length > 0
+    ? new Date(posts[posts.length - 1].published_at ?? Date.now()).getFullYear()
+    : null;
+
+// sameAs links for schema
+const sameAsLinks = [author.handle_link].filter(Boolean) as string[];
+
+// ── SEO strings ────────────────────────────────────────────────────
+
 const authorName = author.name || 'GlobalsBlog Author';
 const authorBio =
   author.bio ||
-  `${authorName} writes practical stories across travel, auto, beauty, news, and lifestyle topics for GlobalsBlog.`;
-const seoTitle = `${authorName} - Author at GlobalsBlog`;
-const seoDescription = `Read articles by ${authorName} on GlobalsBlog. Browse the latest published stories, author bio, and editorial expertise in one profile.`;
+  `${authorName} is a ${jobTitle} contributing practical, well-researched stories to GlobalsBlog across ${expertiseTags.slice(0, 3).join(', ')} and related topics.`;
+
+const seoTitle = `${authorName} — ${jobTitle} at GlobalsBlog`;
+const seoDescription =
+  expertiseTags.length > 0
+    ? `Read ${posts?.length ?? 0} articles by ${authorName}, ${jobTitle} at GlobalsBlog. Stories covering ${expertiseTags.slice(0, 3).join(', ')} and more.`
+    : `Read articles by ${authorName} on GlobalsBlog. Browse published stories, author bio, and editorial expertise in one profile.`;
+
+// ── Extended Person schema (supplements BaseHead schema) ──────────
+
+const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : '';
+const authorProfileUrl = `${siteUrl}/authors/${authorSlug}`;
+const authorSchemaId = `${authorProfileUrl}#person`;
+
+const extendedPersonSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  '@id': authorSchemaId,
+  name: authorName,
+  description: authorBio,
+  jobTitle,
+  ...(author.location ? { address: { '@type': 'PostalAddress', addressLocality: author.location } } : {}),
+  ...(author.avatar_url ? { image: { '@type': 'ImageObject', url: author.avatar_url } } : {}),
+  url: authorProfileUrl,
+  worksFor: {
+    '@type': 'Organization',
+    name: 'GlobalsBlog',
+    url: siteUrl || 'https://globalsblog.com',
+  },
+  knowsAbout: expertiseTags.length > 0 ? expertiseTags : expertiseAreas,
+  ...(sameAsLinks.length > 0 ? { sameAs: sameAsLinks } : {}),
+  mainEntityOfPage: {
+    '@type': 'ProfilePage',
+    '@id': authorProfileUrl,
+  },
+};
 ---
 
 <Layout
@@ -133,81 +248,148 @@ const seoDescription = `Read articles by ${authorName} on GlobalsBlog. Browse th
   authorAvatar={author.avatar_url}
   isAuthorProfile={true}
 >
-  <section class="author-profile" id="person">
-    <div class="author-hero">
-      {author.avatar_url && (
+  <!-- Extended Person schema (knowsAbout, jobTitle, sameAs, mainEntityOfPage) -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(extendedPersonSchema)} />
+
+  <!-- BREADCRUMB -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Home</a></li>
+      <li aria-hidden="true">›</li>
+      <li><a href="/#authors">Authors</a></li>
+      <li aria-hidden="true">›</li>
+      <li aria-current="page">{authorName}</li>
+    </ol>
+  </nav>
+
+  <!-- AUTHOR HERO -->
+  <section class="author-hero" id="person" itemscope itemtype="https://schema.org/Person">
+    <div class="hero-avatar-col">
+      {author.avatar_url ? (
         <img
           src={author.avatar_url}
-          alt={authorName}
-          class="author-photo"
+          alt={`${authorName} — ${jobTitle} at GlobalsBlog`}
+          width="200"
+          height="200"
           loading="eager"
+          fetchpriority="high"
+          class="author-avatar"
+          itemprop="image"
         />
-      )}
-
-      <div>
-        <p class="eyebrow">Author profile</p>
-        <h1>{authorName}</h1>
-        <p class="author-bio">{authorBio}</p>
-
-        <div class="author-actions">
-          <a href="#articles">View articles</a>
-          {author.handle_link && (
-            <a href={author.handle_link} target="_blank" rel="noopener noreferrer">
-              {author.twitter_handle ? `Follow ${author.twitter_handle}` : 'Author social profile'}
-            </a>
-          )}
+      ) : (
+        <div class="avatar-placeholder" aria-hidden="true">
+          {authorName.charAt(0).toUpperCase()}
         </div>
-      </div>
+      )}
+      <span class="verified-badge">GlobalsBlog Author</span>
     </div>
 
-    <div class="author-summary" aria-label="Author details">
-      <div>
-        <strong>{posts?.length || 0}</strong>
-        <span>Published articles</span>
-      </div>
-      <div>
-        <strong>GlobalsBlog</strong>
-        <span>Editorial contributor</span>
-      </div>
-      <div>
-        <strong>Travel, Auto, Beauty, News</strong>
-        <span>Covered categories</span>
+    <div class="hero-info">
+      <p class="eyebrow">Author profile</p>
+      <h1 itemprop="name">{authorName}</h1>
+      <p class="author-jobtitle" itemprop="jobTitle">{jobTitle} at GlobalsBlog</p>
+
+      {author.location && (
+        <p class="author-location" itemprop="address">
+          <span aria-label="Location">📍</span> {author.location}
+        </p>
+      )}
+
+      <p class="author-bio" itemprop="description">{authorBio}</p>
+
+      {expertiseTags.length > 0 && (
+        <div class="expertise-tags" aria-label="Topics this author covers">
+          {expertiseTags.map((tag) => (
+            <span class="expertise-tag">{tag}</span>
+          ))}
+        </div>
+      )}
+
+      <div class="author-links">
+        <a href="#articles" class="btn-primary">
+          View {posts?.length ?? 0} articles
+        </a>
+        {author.handle_link && (
+          <a
+            href={author.handle_link}
+            target="_blank"
+            rel="noopener noreferrer me"
+            class="btn-social"
+            aria-label={`${authorName} on ${author.twitter_handle || 'social media'}`}
+            itemprop="sameAs"
+          >
+            {author.twitter_handle || 'Social profile'}
+          </a>
+        )}
       </div>
     </div>
   </section>
 
-  <section class="articles-section" id="articles">
-    <div class="section-heading">
-      <p class="eyebrow">Articles by {authorName}</p>
-      <h2>All published stories</h2>
+  <!-- CREDIBILITY STATS -->
+  <div class="cred-strip" role="list" aria-label="Author credentials">
+    <div role="listitem">
+      <strong>{posts?.length ?? 0}</strong>
+      <span>Published articles</span>
+    </div>
+    {writingSince && (
+      <div role="listitem">
+        <strong>Since {writingSince}</strong>
+        <span>Writing for GlobalsBlog</span>
+      </div>
+    )}
+    {topCategory && (
+      <div role="listitem">
+        <strong>{topCategory}</strong>
+        <span>Top covered category</span>
+      </div>
+    )}
+    {sortedCategories.length > 1 && (
+      <div role="listitem">
+        <strong>{sortedCategories.length}</strong>
+        <span>Categories covered</span>
+      </div>
+    )}
+    <div role="listitem">
+      <strong>GlobalsBlog</strong>
+      <span>Editorial platform</span>
+    </div>
+  </div>
+
+  <!-- ARTICLES -->
+  <section class="articles-section" id="articles" aria-labelledby="articles-heading">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">By {authorName}</p>
+        <h2 id="articles-heading">
+          {posts?.length ?? 0} articles by {authorName} on GlobalsBlog
+        </h2>
+      </div>
     </div>
 
     {posts?.length ? (
       <div class="article-grid">
         {posts.map((post) => {
-          const category = getSingle(post.categories);
-
+          const cat = getSingle(post.categories);
+          const catSlug = cat?.slug || slugify(cat?.name || 'blog');
           return (
-            <article class="article-card">
-              <a href={getPostUrl(post)}>
+            <article class="article-card" itemprop="author" itemscope itemtype="https://schema.org/Article">
+              <a href={`/${catSlug}/${post.slug}`}>
                 {post.hero_image && (
-                  <img src={post.hero_image} alt={post.title} loading="lazy" />
+                  <img
+                    src={post.hero_image}
+                    alt={post.title}
+                    width="600"
+                    height="338"
+                    loading="lazy"
+                  />
                 )}
-                <div class="article-card-body">
-                  <span>{category?.name ?? 'Story'}</span>
-                  <h3>{post.title}</h3>
-                  <p>
-                    {post.excerpt ||
-                      post.description ||
-                      `Read this ${category?.name?.toLowerCase() || 'story'} article by ${authorName}.`}
-                  </p>
+                <div class="card-body">
+                  <span class="card-tag">{cat?.name ?? 'Story'}</span>
+                  <h3 itemprop="headline">{post.title}</h3>
+                  {post.description && <p>{post.description}</p>}
                   {post.published_at && (
-                    <time datetime={post.published_at}>
-                      {new Date(post.published_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                    <time class="card-date" datetime={post.published_at} itemprop="datePublished">
+                      {formatDate(post.published_at)}
                     </time>
                   )}
                 </div>
@@ -218,116 +400,352 @@ const seoDescription = `Read articles by ${authorName} on GlobalsBlog. Browse th
       </div>
     ) : (
       <div class="empty-state">
-        <h2>No published articles found</h2>
-        <p>This author profile is available, but published posts are not attached yet.</p>
+        <h2>No published articles yet</h2>
+        <p>This author profile is live. Articles will appear here as they are published.</p>
       </div>
     )}
   </section>
+
+  <!-- WHAT THIS AUTHOR COVERS — per-category E-E-A-T content -->
+  {sortedCategories.length > 0 && (
+    <section class="coverage-section" aria-labelledby="coverage-heading">
+
+      <div class="coverage-header">
+        <div>
+          <p class="eyebrow">Editorial expertise</p>
+          <h2 id="coverage-heading">What {authorName} covers on GlobalsBlog</h2>
+        </div>
+        <p class="coverage-intro">
+          {authorName} is a <strong>{jobTitle}</strong> contributing to GlobalsBlog
+          {writingSince ? ` since ${writingSince}` : ''}. Their published work spans{' '}
+          <strong>{sortedCategories.map(([name]) => name).join(', ')}</strong> with a focus on
+          practical, well-researched content for everyday readers.
+        </p>
+      </div>
+
+      <!-- Per-category expertise cards -->
+      <div class="expertise-grid">
+        {sortedCategories.map(([catName, count]) => {
+          const exp = categoryExpertise[catName];
+          if (!exp) return null;
+          return (
+            <div class="expertise-card">
+              <div class="expertise-card-header">
+                <div class="expertise-card-meta">
+                  <strong class="expertise-cat-name">{catName}</strong>
+                  <span class="expertise-article-count">
+                    {count} {count === 1 ? 'article' : 'articles'}
+                  </span>
+                </div>
+                <a
+                  href={`/category/${catName.toLowerCase()}`}
+                  class="expertise-browse-link"
+                  aria-label={`Browse all ${catName} articles`}
+                >
+                  Browse {catName} →
+                </a>
+              </div>
+
+              <p class="expertise-cat-intro">{exp.intro}</p>
+
+              <ul class="expertise-bullets">
+                {exp.bullets.map((bullet) => (
+                  <li>
+                    <span class="bullet-arrow" aria-hidden="true">→</span>
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      <!-- Trust signals -->
+      <div class="coverage-trust-row">
+        <div class="trust-card">
+          <p class="eyebrow">Editorial standards</p>
+          <h3>About this author's work</h3>
+          <p>
+            All articles by {authorName} published on GlobalsBlog go through the site's editorial
+            review process before going live. Content is original, factual, and written to be
+            genuinely useful to readers in each topic area.
+          </p>
+          <a href="/about" class="trust-link">About GlobalsBlog →</a>
+        </div>
+
+        <div class="trust-card">
+          <p class="eyebrow">Topics covered</p>
+          <h3>{sortedCategories.length} {sortedCategories.length === 1 ? 'category' : 'categories'} — {posts?.length ?? 0} articles total</h3>
+          <ul class="trust-cat-list">
+            {sortedCategories.map(([catName, count]) => (
+              <li>
+                <a href={`/category/${catName.toLowerCase()}`}>
+                  {catName}
+                </a>
+                <span>{count} {count === 1 ? 'article' : 'articles'}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {author.handle_link && (
+          <div class="trust-card">
+            <p class="eyebrow">Follow {authorName}</p>
+            <h3>Connect on {author.twitter_handle || 'social media'}</h3>
+            <p>
+              Follow {authorName} for updates on new articles, topic insights, and editorial
+              work across {sortedCategories.map(([name]) => name).join(', ')}.
+            </p>
+            <a
+              href={author.handle_link}
+              target="_blank"
+              rel="noopener noreferrer me"
+              class="trust-link"
+            >
+              Follow on {author.twitter_handle || 'social media'} →
+            </a>
+          </div>
+        )}
+      </div>
+
+    </section>
+  )}
+
 </Layout>
 
 <style>
-  .author-profile,
-  .articles-section {
-    display: grid;
-    gap: 1.4rem;
+  /* ── Breadcrumb ── */
+  .breadcrumb {
+    margin-bottom: 1.2rem;
   }
 
-  .author-hero,
-  .author-summary,
-  .article-card a,
-  .empty-state {
-    border: 1px solid var(--line);
-    background: var(--card);
-    box-shadow: var(--shadow-tight);
+  .breadcrumb ol {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    flex-wrap: wrap;
   }
 
+  .breadcrumb a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 180ms;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--accent-strong);
+  }
+
+  .breadcrumb [aria-current="page"] {
+    color: var(--ink-strong);
+    font-weight: 600;
+  }
+
+  /* ── Author hero ── */
   .author-hero {
     display: grid;
-    grid-template-columns: 180px minmax(0, 1fr);
-    gap: clamp(1.4rem, 4vw, 2.5rem);
-    align-items: center;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
     padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid var(--line);
     border-radius: var(--radius-xl);
+    background:
+      radial-gradient(circle at top right, rgba(182, 91, 46, 0.1), transparent 22rem),
+      var(--card);
+    box-shadow: var(--shadow-tight);
+    margin-bottom: 1.2rem;
   }
 
-  .author-photo {
-    width: 180px;
-    aspect-ratio: 1;
+  .hero-avatar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+  }
+
+  .author-avatar {
+    width: 160px;
+    height: 160px;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid var(--surface-strong);
     box-shadow: var(--shadow);
   }
 
-  .author-bio {
-    max-width: 58rem;
-    margin-top: 1rem;
-    color: var(--muted);
-    font-size: 1.08rem;
+  .avatar-placeholder {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #fff7ef;
+    border: 4px solid var(--surface-strong);
   }
 
-  .author-actions {
+  .verified-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(182, 91, 46, 0.1);
+    border: 1px solid rgba(182, 91, 46, 0.25);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent-strong);
+    text-align: center;
+  }
+
+  .eyebrow {
+    margin-bottom: 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .author-hero h1 {
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    margin-bottom: 0.3rem;
+    line-height: 1.1;
+  }
+
+  .author-jobtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent-strong);
+    margin-bottom: 0.5rem;
+  }
+
+  .author-location {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .author-bio {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 58rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .expertise-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-top: 1.3rem;
+    gap: 0.5rem;
+    margin-bottom: 1.3rem;
   }
 
-  .author-actions a {
+  .expertise-tag {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    background: rgba(182, 91, 46, 0.08);
+    border: 1px solid rgba(182, 91, 46, 0.2);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    letter-spacing: 0.04em;
+  }
+
+  .author-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .btn-primary,
+  .btn-social {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
-    padding: 0.7rem 1rem;
+    min-height: 42px;
+    padding: 0.6rem 1.1rem;
     border-radius: 999px;
-    text-decoration: none;
+    font-size: 0.9rem;
     font-weight: 700;
+    text-decoration: none;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .btn-primary {
     background: var(--ink-strong);
     color: #fff7ef;
   }
 
-  .author-actions a + a {
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+  }
+
+  .btn-social {
     background: transparent;
     color: var(--accent-strong);
     border: 1px solid var(--line);
   }
 
-  .author-summary {
+  .btn-social:hover {
+    background: rgba(182, 91, 46, 0.06);
+    transform: translateY(-1px);
+  }
+
+  /* ── Credibility stats ── */
+  .cred-strip {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 1rem;
-    padding: 1.2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .cred-strip > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
   }
 
-  .author-summary div {
-    display: grid;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-
-  .author-summary strong {
+  .cred-strip strong {
+    font-size: 1.15rem;
     color: var(--ink-strong);
     line-height: 1.2;
   }
 
-  .author-summary span,
-  .section-heading,
-  .article-card-body p,
-  .article-card-body time,
-  .empty-state p {
+  .cred-strip span {
+    font-size: 0.78rem;
     color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
+  /* ── Articles section ── */
   .articles-section {
-    margin-top: 2.4rem;
+    margin-bottom: 2.5rem;
   }
 
-  .section-heading {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 1rem;
+  .section-header {
+    margin-bottom: 1.4rem;
+  }
+
+  .section-header h2 {
+    font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+    margin-bottom: 0;
   }
 
   .article-grid {
@@ -340,9 +758,13 @@ const seoDescription = `Read articles by ${authorName} on GlobalsBlog. Browse th
     display: block;
     height: 100%;
     overflow: hidden;
-    border-radius: var(--radius-lg);
     text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
     color: inherit;
+    transition: transform 180ms ease, box-shadow 180ms ease;
   }
 
   .article-card a:hover {
@@ -356,58 +778,287 @@ const seoDescription = `Read articles by ${authorName} on GlobalsBlog. Browse th
     object-fit: cover;
   }
 
-  .article-card-body {
+  .card-body {
     display: grid;
-    gap: 0.65rem;
-    padding: 1.15rem;
+    gap: 0.5rem;
+    padding: 1.1rem 1.2rem 1.3rem;
   }
 
-  .article-card-body span {
-    font-size: 0.78rem;
-    letter-spacing: 0.18em;
+  .card-tag {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--accent-strong);
     font-weight: 700;
   }
 
-  .article-card-body h3 {
+  .card-body h3 {
     margin: 0;
-    font-size: 1.35rem;
+    font-size: 1.1rem;
+    line-height: 1.3;
+    color: var(--ink-strong);
   }
 
-  .article-card-body p {
+  .card-body p {
     margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  .article-card-body time {
-    font-size: 0.9rem;
+  .card-date {
+    font-size: 0.8rem;
+    color: var(--muted);
   }
 
   .empty-state {
     padding: 2rem;
+    border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    background: var(--card);
     text-align: center;
+    color: var(--muted);
   }
 
-  @media (max-width: 980px) {
-    .article-grid {
+  /* ── Coverage / E-E-A-T section ── */
+  .coverage-section {
+    padding: clamp(1.8rem, 4vw, 2.8rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(circle at top left, rgba(210, 124, 67, 0.08), transparent 22rem),
+      var(--card);
+    box-shadow: var(--shadow-tight);
+    margin-bottom: 1rem;
+    display: grid;
+    gap: 2rem;
+  }
+
+  .coverage-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .coverage-header h2 {
+    font-size: clamp(1.3rem, 2.5vw, 1.85rem);
+    margin-bottom: 0;
+    line-height: 1.2;
+  }
+
+  .coverage-intro {
+    margin: 0;
+    font-size: 0.97rem;
+    color: var(--muted);
+    line-height: 1.7;
+    align-self: center;
+  }
+
+  /* Per-category expertise cards */
+  .expertise-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .expertise-card {
+    padding: 1.4rem 1.5rem 1.6rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 253, 248, 0.9);
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .expertise-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .expertise-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .expertise-cat-name {
+    font-size: 1.15rem;
+    color: var(--ink-strong);
+    line-height: 1.2;
+  }
+
+  .expertise-article-count {
+    font-size: 0.75rem;
+    color: var(--accent-strong);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .expertise-browse-link {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms;
+    flex: 0 0 auto;
+    padding-top: 0.15rem;
+  }
+
+  .expertise-browse-link:hover {
+    border-color: var(--accent-strong);
+  }
+
+  .expertise-cat-intro {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.65;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .expertise-bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .expertise-bullets li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .bullet-arrow {
+    color: var(--accent-strong);
+    font-weight: 700;
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    margin-top: 0.18em;
+  }
+
+  /* Trust row */
+  .coverage-trust-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .trust-card {
+    padding: 1.2rem 1.3rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 253, 248, 0.85);
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+
+  .trust-card h3 {
+    font-size: 0.98rem;
+    color: var(--ink-strong);
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .trust-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0 0 0.5rem;
+  }
+
+  .trust-link {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms;
+    width: fit-content;
+  }
+
+  .trust-link:hover {
+    border-color: var(--accent-strong);
+  }
+
+  .trust-cat-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .trust-cat-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+  }
+
+  .trust-cat-list a {
+    color: var(--accent-strong);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .trust-cat-list a:hover {
+    text-decoration: underline;
+  }
+
+  .trust-cat-list span {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 860px) {
+    .article-grid,
+    .expertise-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .coverage-header {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
   }
 
-  @media (max-width: 760px) {
-    .author-hero,
-    .author-summary,
-    .article-grid {
+  @media (max-width: 640px) {
+    .author-hero {
       grid-template-columns: 1fr;
+      text-align: center;
     }
 
-    .author-photo {
-      width: 140px;
+    .hero-avatar-col {
+      justify-self: center;
     }
 
-    .section-heading {
-      display: block;
+    .expertise-tags,
+    .author-links {
+      justify-content: center;
+    }
+
+    .article-grid,
+    .expertise-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
