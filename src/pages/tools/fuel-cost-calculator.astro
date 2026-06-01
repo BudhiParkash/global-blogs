@@ -1,0 +1,192 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FuelCostCalculator from '../../components/calculators/FuelCostCalculator.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Fuel Cost Calculator India — Calculate Petrol & Diesel Expense for Any Trip';
+const description = 'Free fuel cost calculator for India. Enter distance, your car\'s mileage, and current petrol or diesel price to instantly calculate trip fuel expense. Works for cars, bikes, and trucks.';
+
+const faqs = [
+  {
+    q: 'How is fuel cost calculated?',
+    a: 'Fuel cost = (Distance ÷ Fuel Efficiency) × Fuel Price per litre. For example, a 500 km trip in a car that gives 15 km/L at ₹102/L costs (500 ÷ 15) × 102 = ₹3,400 in fuel.',
+  },
+  {
+    q: 'What is the average mileage of Indian cars?',
+    a: 'Mileage varies by car type. Hatchbacks like Maruti Swift give 20–23 km/L (claimed) but 14–17 km/L real-world. Sedans average 13–17 km/L, SUVs 10–14 km/L, and diesel cars typically give 18–24 km/L claimed. Always use your real-world average for accurate results.',
+  },
+  {
+    q: 'What is the current petrol price in India?',
+    a: 'Petrol prices vary by city due to local taxes. As of mid-2025, petrol is around ₹94–106/L in major metros. Diesel is typically ₹8–12 cheaper per litre. Check your local petrol station or fuel price apps for today\'s rate.',
+  },
+  {
+    q: 'Does driving speed affect fuel cost?',
+    a: 'Yes, significantly. Most Indian cars achieve peak fuel efficiency between 60–80 km/h. Highway driving at 100–120 km/h can reduce mileage by 15–25% compared to the claimed figure. AC usage reduces mileage by another 8–12%. Account for this in your estimates.',
+  },
+  {
+    q: 'How can I reduce my fuel cost on a long trip?',
+    a: 'Maintain steady speeds (60–80 km/h on highways), keep tyre pressure correct (check before long trips), avoid unnecessary idling, travel in the cooler parts of the day to reduce AC load, and ensure the car is serviced (clean air filter, fresh spark plugs all help).',
+  },
+  {
+    q: 'Should I include return journey fuel cost?',
+    a: 'If you are entering one-way distance, multiply the result by 2 for a return trip. The calculator computes fuel for the distance you enter, so enter total round-trip distance for a full estimate.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Fuel Cost Calculator',
+      url: 'https://globalsblog.com/tools/fuel-cost-calculator',
+      description,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Any',
+      browserRequirements: 'Requires JavaScript',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Auto">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Fuel Cost Calculator</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">⛽ Auto Tool</span>
+    <h1 class="calc-hero-title">Fuel Cost Calculator India</h1>
+    <p class="calc-hero-desc">
+      Calculate petrol or diesel expenses for any trip — instantly. Enter your distance,
+      car mileage, and current fuel price to get a precise breakdown.
+    </p>
+  </section>
+
+  <FuelCostCalculator client:load />
+
+  <section class="calc-section">
+    <h2>How to Use the Fuel Cost Calculator</h2>
+    <p>This calculator uses a straightforward formula: <strong>Fuel Cost = (Distance ÷ Mileage) × Fuel Price</strong>. Here is what each field means:</p>
+    <ul>
+      <li><strong>Distance (km):</strong> The total distance of your journey. For a return trip, enter the full round-trip distance.</li>
+      <li><strong>Fuel Efficiency (km/L):</strong> Your car's real-world mileage, not the manufacturer's claimed figure. Check your trip meter for an accurate reading.</li>
+      <li><strong>Fuel Price (₹/L):</strong> The current price at your nearest fuel station. Petrol and diesel prices differ — use the right one for your vehicle.</li>
+    </ul>
+
+    <h3>Fuel Cost Examples for Popular Indian Routes</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Distance</th>
+            <th>At 15 km/L, ₹102/L</th>
+            <th>At 20 km/L, ₹102/L</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mumbai → Pune</td><td>150 km</td><td>₹1,020</td><td>₹765</td></tr>
+          <tr><td>Delhi → Agra</td><td>230 km</td><td>₹1,564</td><td>₹1,173</td></tr>
+          <tr><td>Bengaluru → Mysuru</td><td>150 km</td><td>₹1,020</td><td>₹765</td></tr>
+          <tr><td>Mumbai → Goa</td><td>600 km</td><td>₹4,080</td><td>₹3,060</td></tr>
+          <tr><td>Delhi → Jaipur</td><td>280 km</td><td>₹1,904</td><td>₹1,428</td></tr>
+          <tr><td>Chennai → Pondicherry</td><td>170 km</td><td>₹1,156</td><td>₹867</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Real-World vs Claimed Mileage</h3>
+    <p>ARAI (Automotive Research Association of India) lab-tested mileage figures are always higher than real-world figures. For accurate calculations, use these real-world estimates:</p>
+    <ul>
+      <li>Maruti Swift (petrol): 14–16 km/L on highways, 12–13 city</li>
+      <li>Hyundai Creta (petrol): 12–14 km/L highway, 10–12 city</li>
+      <li>Toyota Fortuner (diesel): 12–14 km/L highway, 9–11 city</li>
+      <li>Maruti Alto K10 (petrol): 18–21 km/L highway, 15–18 city</li>
+    </ul>
+
+    <h3>Tips to Improve Fuel Economy</h3>
+    <p>Proper tyre inflation (check the owner's manual for recommended PSI) can improve mileage by up to 3%. Driving at a steady 60–80 km/h on expressways saves 15–20% fuel compared to maintaining 110–120 km/h. Avoiding hard braking and unnecessary idling further stretch each litre.</p>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <p>Use these tools alongside the fuel calculator for complete trip planning:</p>
+    <div class="calc-tools-grid">
+      <a href="/tools/road-trip-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">🗺</span>
+        <span class="calc-tool-name">Road Trip Planner</span>
+        <span class="calc-tool-desc">Add hotel, food & toll to your fuel cost</span>
+      </a>
+      <a href="/tools/toll-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">🚧</span>
+        <span class="calc-tool-name">Toll Calculator</span>
+        <span class="calc-tool-desc">Estimate highway toll charges</span>
+      </a>
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Full trip cost across all modes</span>
+      </a>
+      <a href="/tools/ev-savings-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⚡</span>
+        <span class="calc-tool-name">EV Savings Calculator</span>
+        <span class="calc-tool-desc">Compare petrol vs electric running cost</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse the full tools collection</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Travel, auto & lifestyle stories</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="auto"
+    heading="Auto Guides, Car Reviews & Fuel Efficiency Tips"
+    subheading="Explore our in-depth auto articles — car buying guides, mileage comparisons, EV reviews, and ownership tips from GlobalsBlog."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

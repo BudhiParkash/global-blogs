@@ -6,6 +6,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 import partytown from '@astrojs/partytown';
+import react from '@astrojs/react';
 
 const site =
   process.env.PUBLIC_SITE_URL ||
@@ -18,8 +19,9 @@ export default defineConfig({
   site,
   trailingSlash: 'never',
   integrations: [
-    mdx(), 
-    sitemap(), 
+    react(),
+    mdx(),
+    sitemap(),
     // UPDATED: Added configuration to partytown
     partytown({
       config: {

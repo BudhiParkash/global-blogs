@@ -1,0 +1,193 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TollCalculator from '../../components/calculators/TollCalculator.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Road Toll Calculator India — Estimate NHAI Highway Toll Charges 2025';
+const description = 'Estimate toll charges for national highways and expressways in India. Enter your distance and vehicle type for FASTag vs cash toll comparisons. Based on NHAI average toll rates for 2025.';
+
+const faqs = [
+  {
+    q: 'How are toll charges calculated on Indian highways?',
+    a: 'NHAI (National Highways Authority of India) charges tolls based on the highway project concession agreement. Rates vary by vehicle category, distance, and the specific highway. As an estimate, cars pay roughly ₹1.5–2 per km, LCVs ₹2.5–3/km, and heavy vehicles ₹5–8/km on national highways.',
+  },
+  {
+    q: 'What is FASTag and how does it save money?',
+    a: 'FASTag is a RFID tag affixed to your windscreen that allows automatic deduction from your linked bank account or wallet as you pass through a toll plaza. All vehicles are required to use FASTag on national highways in India. FASTag users get a 5% discount on toll charges compared to cash payment, and avoid queues at toll plazas.',
+  },
+  {
+    q: 'Which vehicle class should I select?',
+    a: 'Car/Jeep/Van covers all private passenger cars. LCV (Light Commercial Vehicle) includes mini trucks, tempos, and pick-ups. Bus/Truck (2-axle) covers buses and standard freight trucks. Heavy vehicles with 3 or more axles fall in the higher categories. When in doubt, select the option that best describes your vehicle.',
+  },
+  {
+    q: 'Are toll rates the same on all Indian highways?',
+    a: 'No. Toll rates vary significantly between highways. Expressways like the Yamuna Expressway, Mumbai–Pune Expressway, and Delhi–Meerut Expressway tend to have higher per-km rates than regular national highways because they are premium, access-controlled roads. This calculator provides an average estimate.',
+  },
+  {
+    q: 'Do state highways also have toll booths?',
+    a: 'Yes, several state highways have their own toll plazas operated by state governments or private concessionaires. These rates differ from NHAI and are not included in this estimate. This calculator covers national highway estimates only.',
+  },
+  {
+    q: 'How many toll booths should I expect on a 500 km trip?',
+    a: 'On average, you can expect a toll booth roughly every 50–70 km on national highways, so a 500 km journey might have 7–10 toll stops. This varies significantly by route — some expressways have fewer booths but higher per-booth charges.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Road Toll Calculator India',
+      url: 'https://globalsblog.com/tools/toll-calculator',
+      description,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Auto">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Toll Calculator</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">🚧 Highway Tool</span>
+    <h1 class="calc-hero-title">Road Toll Calculator India</h1>
+    <p class="calc-hero-desc">
+      Estimate national highway toll charges for any vehicle type — with FASTag vs cash comparison.
+      Based on NHAI average toll rates for 2025.
+    </p>
+  </section>
+
+  <TollCalculator client:load />
+
+  <section class="calc-section">
+    <h2>Understanding Toll Charges on Indian National Highways</h2>
+    <p>India has one of the world's largest road networks, with the National Highways Authority of India (NHAI) managing over 50,000 km of national highways. Toll roads fund the construction and maintenance of these roads through a user-pay model. Knowing how tolls are structured helps you budget accurately for road travel.</p>
+
+    <h3>NHAI Vehicle Categories and Rate Ranges</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Vehicle Class</th>
+            <th>Vehicles Covered</th>
+            <th>Approx. Rate per km</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Class 1 — Car/Jeep/Van</td><td>Passenger cars, SUVs, MPVs</td><td>₹1.5 – ₹2.1</td></tr>
+          <tr><td>Class 2 — LCV</td><td>Light commercial vehicles, tempos</td><td>₹2.3 – ₹3.2</td></tr>
+          <tr><td>Class 3 — Bus/Truck 2-Axle</td><td>Minibuses, standard trucks</td><td>₹4.6 – ₹6.5</td></tr>
+          <tr><td>Class 4 — Heavy (3 Axle)</td><td>Large trucks, multi-axle heavy vehicles</td><td>₹5.8 – ₹7.2</td></tr>
+          <tr><td>Class 5 — Oversized</td><td>Multi-axle, over-dimensional cargo</td><td>₹7.5 – ₹10+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>FASTag — Why It's Mandatory and How It Saves You Money</h3>
+    <p>Since February 2021, FASTag has been mandatory for all vehicles on national highways in India. Vehicles without FASTag must pay double the toll at cash lanes. A FASTag user gets a 5% cashback benefit on toll payments when linked to a NETC-registered bank account. The tag costs ₹200–500 one-time and the convenience of not stopping at booths alone makes it worth it.</p>
+
+    <h3>Toll Costs for Popular Highway Routes</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Distance</th>
+            <th>Est. Toll (Car, FASTag)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Delhi → Jaipur (NH 48)</td><td>~282 km</td><td>₹430 – ₹480</td></tr>
+          <tr><td>Mumbai → Pune Expressway</td><td>~95 km</td><td>₹285 – ₹310</td></tr>
+          <tr><td>Bengaluru → Mysuru (NH 275)</td><td>~150 km</td><td>₹230 – ₹265</td></tr>
+          <tr><td>Delhi → Agra Yamuna Expressway</td><td>~165 km</td><td>₹395 – ₹440</td></tr>
+          <tr><td>Mumbai → Goa (NH 66)</td><td>~600 km</td><td>₹850 – ₹1,000</td></tr>
+          <tr><td>Hyderabad → Vijayawada</td><td>~275 km</td><td>₹400 – ₹450</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How to Recharge Your FASTag</h3>
+    <p>FASTag can be recharged through your bank's app (all major banks issue FASTag), BHIM UPI, Paytm Wallet, PhonePe, the iSpririt NETC portal, or directly through the NHAI FASTag app. Keep a minimum ₹200–500 balance before long highway trips to avoid hold-ups.</p>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">Add fuel expense to your trip budget</span>
+      </a>
+      <a href="/tools/road-trip-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">🗺</span>
+        <span class="calc-tool-name">Road Trip Planner</span>
+        <span class="calc-tool-desc">Full road trip budget with tolls & fuel</span>
+      </a>
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Complete travel cost estimate</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free travel tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Stories on travel, auto & lifestyle</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="auto"
+    heading="Highway & Road Travel — Auto Guides from GlobalsBlog"
+    subheading="Car reviews, highway driving tips, FASTag guides, and everything you need to know about road travel in India."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

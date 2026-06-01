@@ -1,0 +1,182 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EvSavingsCalculator from '../../components/calculators/EvSavingsCalculator.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'EV Savings Calculator India — How Much Can You Save Switching to Electric Car?';
+const description = 'Calculate monthly and yearly savings by switching from a petrol car to an electric vehicle in India. Compare EV running cost vs petrol cost and find your break-even point. Includes 5-year savings estimate.';
+
+const faqs = [
+  {
+    q: 'How is EV savings calculated?',
+    a: 'Savings = (Monthly km driven × Petrol cost per km) − (Monthly km driven × EV electricity cost per km). Petrol cost per km = Petrol price ÷ Petrol mileage. EV cost per km = Electricity rate per kWh ÷ EV efficiency in km/kWh. Multiply monthly savings by 12 for yearly savings.',
+  },
+  {
+    q: 'What is a typical EV efficiency (km/kWh) for Indian EVs?',
+    a: 'Indian EVs typically deliver 5–7 km per kWh in real-world conditions. The Tata Nexon EV gets about 5.5–6 km/kWh, the MG ZS EV around 5–5.5 km/kWh, and the Tata Tiago EV up to 6.5–7 km/kWh. City driving with regenerative braking is usually more efficient than highway driving.',
+  },
+  {
+    q: 'What electricity rate should I use for home charging?',
+    a: 'Residential electricity rates in India range from ₹5–12 per kWh depending on your state and consumption slab. Most middle-income households pay ₹6–9 per kWh. Check your electricity bill for your applicable rate. Public fast chargers cost ₹12–18/kWh, so home charging is always cheaper.',
+  },
+  {
+    q: 'Are there government subsidies for buying an EV in India?',
+    a: 'Yes. The FAME II scheme provides subsidies on eligible electric cars. Many state governments also offer additional incentives — for example, Gujarat, Maharashtra, and Delhi have offered substantial subsidies on EV purchase. Check the latest FAME scheme beneficiary list before buying.',
+  },
+  {
+    q: 'What are the hidden costs of owning an EV not covered in this calculator?',
+    a: 'This calculator covers running fuel costs only. Other ownership costs include: home charger installation (₹15,000–30,000 one-time), higher insurance premiums for EVs (typically 10–20% higher than comparable petrol cars), and potential battery replacement costs after 8–10 years (though most manufacturers offer 8-year battery warranties).',
+  },
+  {
+    q: 'Is EV maintenance cheaper than petrol cars?',
+    a: 'Generally yes. EVs have fewer moving parts — no engine oil changes, no clutch, no exhaust system, no spark plugs. Annual maintenance typically costs ₹3,000–8,000 for an EV vs ₹10,000–25,000 for a comparable petrol car. Brake pads also last longer due to regenerative braking.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'EV Savings Calculator India',
+      url: 'https://globalsblog.com/tools/ev-savings-calculator',
+      description,
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Auto">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>EV Savings Calculator</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">⚡ Electric Vehicle Tool</span>
+    <h1 class="calc-hero-title">EV Savings Calculator India</h1>
+    <p class="calc-hero-desc">
+      Discover exactly how much you could save every month and every year by switching
+      to an electric vehicle. Compare your real running costs and find your break-even point.
+    </p>
+  </section>
+
+  <EvSavingsCalculator client:load />
+
+  <section class="calc-section">
+    <h2>Petrol Car vs Electric Vehicle — True Cost of Running</h2>
+    <p>The sticker price of an EV is higher than a comparable petrol car, but the running cost tells a very different story. In India, where petrol prices regularly cross ₹100 per litre, the cost advantage of EVs is substantial for anyone driving more than 1,000 km per month.</p>
+
+    <h3>Real-World Comparison: Tata Nexon EV vs Nexon Petrol</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Nexon Petrol</th>
+            <th>Nexon EV</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Fuel efficiency</td><td>~14 km/L (real)</td><td>~5.8 km/kWh (real)</td></tr>
+          <tr><td>Fuel price</td><td>₹102/L petrol</td><td>₹8/kWh (home charging)</td></tr>
+          <tr><td>Cost per km</td><td>~₹7.3/km</td><td>~₹1.4/km</td></tr>
+          <tr><td>Monthly cost (1500 km)</td><td>~₹10,900</td><td>~₹2,070</td></tr>
+          <tr><td>Yearly cost</td><td>~₹1,30,800</td><td>~₹24,840</td></tr>
+          <tr><td>Yearly savings</td><td colspan="2" style="text-align:center;font-weight:bold;color:var(--accent)">~₹1,05,960</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What is the Price Premium for an EV in India?</h3>
+    <p>The EV variant of a car typically costs ₹3–8 lakh more than the equivalent petrol version. The Tata Nexon EV costs approximately ₹5 lakh more than the Nexon petrol. At ₹1,05,960 yearly savings, the break-even point would be roughly 4–5 years — after which the EV puts money back in your pocket every month.</p>
+
+    <h3>Best EVs for High-Mileage Drivers in India (2025)</h3>
+    <ul>
+      <li><strong>Tata Tiago EV</strong> — Most affordable, ~6.5 km/kWh, ideal for city commuters</li>
+      <li><strong>Tata Nexon EV</strong> — Best-seller, 465 km range, ~5.8 km/kWh</li>
+      <li><strong>MG Windsor EV</strong> — Battery-as-a-service option available, 331 km range</li>
+      <li><strong>BYD Seal / Atto 3</strong> — Premium with advanced tech, 400–500 km range</li>
+      <li><strong>Mahindra XEV 9e</strong> — Latest flagship, 656 km range, fast-charging support</li>
+    </ul>
+
+    <h3>Charging at Home vs Public Chargers</h3>
+    <p>Home charging overnight on a standard 15A socket or 7.4 kW home charger costs ₹6–9 per kWh in most Indian states — making it far cheaper than petrol. Public DC fast chargers cost ₹12–18 per kWh and add convenience but at roughly 3–4× the per-km cost of home charging. Smart EV owners charge at home 80–90% of the time and use public chargers only on long trips.</p>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/car-loan-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">🏦</span>
+        <span class="calc-tool-name">Car Loan EMI Calculator</span>
+        <span class="calc-tool-desc">Calculate your monthly EV loan EMI</span>
+      </a>
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">How much does petrol cost per trip?</span>
+      </a>
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Full travel expense estimator</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Auto reviews & travel stories</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="auto"
+    heading="EV & Auto Guides — In-Depth Articles from GlobalsBlog"
+    subheading="Electric vehicle reviews, charging guides, petrol vs EV comparisons, and the latest auto industry news for Indian buyers."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

@@ -14,11 +14,14 @@
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
     "@astrojs/partytown": "^2.1.7",
+    "@astrojs/react": "^5.0.6",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
     "@supabase/supabase-js": "^2.105.3",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.2.2",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "sharp": "^0.34.3",
     "tailwindcss": "^4.2.4"
   }

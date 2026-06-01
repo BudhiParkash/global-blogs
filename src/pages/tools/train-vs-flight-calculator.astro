@@ -1,0 +1,181 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TrainVsFlightCalculator from '../../components/calculators/TrainVsFlightCalculator.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Train vs Flight Calculator India — Compare Cost & Travel Time for Any Route';
+const description = 'Compare the true cost and total travel time of taking a train versus flying in India. Includes airport transfer costs and check-in time for a realistic comparison. Free, instant results for any route.';
+
+const faqs = [
+  {
+    q: 'Is train or flight cheaper for travel within India?',
+    a: 'Trains are almost always cheaper than flights for the same route, often by 3–8x per person. A Delhi to Mumbai train ticket in 3A class costs ₹1,200–1,800, while flights typically cost ₹4,000–10,000 during moderate demand. However, flights save significant time on long routes (1,400+ km), which may be worth the premium for business travellers.',
+  },
+  {
+    q: 'When does flying make more sense than taking the train in India?',
+    a: 'Flying makes more sense when: (1) The journey is longer than 700–800 km and time is precious. (2) The train journey would take 20+ hours (e.g., Delhi to Chennai, 28–33 hrs vs 2.5 hr flight). (3) You are travelling during peak season where train tickets are unavailable. (4) There are 2+ connecting train changes required. (5) Flying is subsidised by work or points/miles programs.',
+  },
+  {
+    q: 'Why does this calculator add airport transfer time to the flight?',
+    a: 'A flight\'s listed duration is just the air time. The real door-to-door time includes: travel to the airport (30–90 min from city centre in most Indian cities), security and check-in (1.5–2 hrs for domestic), boarding (15–20 min), flight, deboarding (15–25 min), collecting baggage (10–20 min), and transfer from arrival airport to city (30–90 min). Adding these makes the comparison fair.',
+  },
+  {
+    q: 'On which Indian routes is the train clearly better than flying?',
+    a: 'Train is clearly better (faster door-to-door and much cheaper) on routes under 500 km: Mumbai–Pune (3 hr train vs 4+ hr total for flight), Delhi–Agra (2.5–3 hr Shatabdi vs 4+ hr flight experience), Bengaluru–Chennai (5–6 hr train vs 5+ hr door-to-door for flight), and Delhi–Jaipur (4–5 hr train vs 5+ hr total for flight).',
+  },
+  {
+    q: 'What class of train ticket should I compare with a flight?',
+    a: 'For a fair comfort comparison: 1AC or 2AC train classes (air-conditioned, reserved berths) compare with economy class flights. 3AC compares with budget airline economy. For business class flights, compare with 1AC First Class. Long-distance 3AC train travel is comfortable and significantly cheaper than any flight class on the same route.',
+  },
+  {
+    q: 'How accurate are the flight prices in this calculator?',
+    a: 'The calculator uses prices you enter — it does not fetch live prices. Enter the actual fare you found on a booking site (MakeMyTrip, Ixigo, IndiGo, Air India website) for the most accurate comparison. Add ₹200–500 for checked baggage fees on budget carriers if applicable.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Train vs Flight Calculator India',
+      url: 'https://globalsblog.com/tools/train-vs-flight-calculator',
+      description,
+      applicationCategory: 'TravelApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Travel">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Train vs Flight Calculator</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">🆚 Comparison Tool</span>
+    <h1 class="calc-hero-title">Train vs Flight Calculator India</h1>
+    <p class="calc-hero-desc">
+      Compare the real cost and true door-to-door travel time for any Indian route.
+      Our calculator factors in airport transfer, check-in time, and group size for a fair comparison.
+    </p>
+  </section>
+
+  <TrainVsFlightCalculator client:load />
+
+  <section class="calc-section">
+    <h2>Train vs Flight in India — The Real Picture</h2>
+    <p>The listed flight time is just the air time. The true cost of flying includes getting to the airport (often 45–90 min from city centres), security and check-in (1.5–2 hrs minimum for domestic), the flight itself, baggage collection, and travel from the arrival airport — adding 3–5 hours to the shortest flight. For routes under 700 km, trains often win on total travel time and almost always win on cost.</p>
+
+    <h3>Popular Routes — Train vs Flight Comparison</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Train (fastest)</th>
+            <th>Train Fare (2AC)</th>
+            <th>Flight Time</th>
+            <th>Flight Fare</th>
+            <th>Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mumbai → Pune</td><td>3 hr (Shatabdi)</td><td>₹780</td><td>3.5 hr total</td><td>₹4,500+</td><td>🚂 Train</td></tr>
+          <tr><td>Delhi → Jaipur</td><td>4.5 hr</td><td>₹900</td><td>4 hr total</td><td>₹3,500+</td><td>🚂 Train</td></tr>
+          <tr><td>Delhi → Mumbai</td><td>16–17 hr</td><td>₹2,200</td><td>5 hr total</td><td>₹5,500+</td><td>✈ Flight</td></tr>
+          <tr><td>Delhi → Bengaluru</td><td>34 hr</td><td>₹2,500</td><td>5.5 hr total</td><td>₹5,000+</td><td>✈ Flight</td></tr>
+          <tr><td>Mumbai → Goa</td><td>11–12 hr</td><td>₹1,500</td><td>4.5 hr total</td><td>₹4,200+</td><td>🚂 Train (if no rush)</td></tr>
+          <tr><td>Bengaluru → Chennai</td><td>6 hr</td><td>₹850</td><td>4.5 hr total</td><td>₹3,800+</td><td>🚂 Train</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>When to Book Train vs Flight</h3>
+    <p>Train tickets on popular routes can sell out 60–90 days in advance. Check availability and book early for Rajdhani Express, Shatabdi, and Duronto trains. Tatkal quota opens 1 day before for trains, at a premium of ₹200–500 above base fare. Flight prices are most volatile — midweek flights (Tuesday/Wednesday) and those departing before 7 AM are typically 20–30% cheaper.</p>
+
+    <h3>Carbon Footprint — Train Always Wins</h3>
+    <p>Train travel produces approximately 6–14 grams of CO₂ per passenger per km. Domestic flights produce 150–190 grams per passenger per km — 15–25× more. For environmentally conscious travellers, trains are the clear choice wherever time allows. Indian Railways is one of the world's largest networks and continues to electrify its routes, further reducing its carbon footprint.</p>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Full trip expense estimator</span>
+      </a>
+      <a href="/tools/travel-budget-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">📋</span>
+        <span class="calc-tool-name">Travel Budget Planner</span>
+        <span class="calc-tool-desc">Plan your full holiday budget</span>
+      </a>
+      <a href="/tools/road-trip-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">🗺</span>
+        <span class="calc-tool-name">Road Trip Planner</span>
+        <span class="calc-tool-desc">Self-drive vs train vs flight?</span>
+      </a>
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">Calculate driving costs</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free travel tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Travel tips & destination guides</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="travel"
+    heading="India Travel Articles — Routes, Tips & Destination Guides"
+    subheading="Everything from choosing the right mode of transport to the best destinations to visit by train or flight across India."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

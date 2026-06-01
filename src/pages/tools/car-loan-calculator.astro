@@ -1,0 +1,198 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CarLoanCalculator from '../../components/calculators/CarLoanCalculator.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Car Loan EMI Calculator India 2025 — Calculate Monthly EMI, Interest & Total Payable';
+const description = 'Free car loan EMI calculator for India. Enter car price, down payment, interest rate, and tenure to instantly calculate monthly EMI, total interest, and total amount payable. Compare different loan scenarios.';
+
+const faqs = [
+  {
+    q: 'How is car loan EMI calculated?',
+    a: 'EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the loan principal (car price minus down payment), r is the monthly interest rate (annual rate ÷ 12 ÷ 100), and n is the loan tenure in months. This is the standard reducing-balance EMI formula used by all Indian banks.',
+  },
+  {
+    q: 'What is the current car loan interest rate in India?',
+    a: 'Car loan interest rates in India typically range from 7.5% to 14% per annum depending on the lender, borrower credit score, and car type. As of 2025: SBI offers rates from 8.75%, HDFC Bank from 8.65%, ICICI Bank from 8.9%, and Axis Bank from 8.7%. New car loans are cheaper than used car loans. A CIBIL score above 750 helps you get the best rates.',
+  },
+  {
+    q: 'How much down payment should I put for a car loan?',
+    a: 'A higher down payment reduces your loan principal, resulting in lower EMI and less total interest paid. Banks typically finance up to 80–85% of the on-road price. Putting down 20–30% is generally recommended to keep EMI manageable and reduce total interest burden. For example, on a ₹10L car, putting down ₹2.5L instead of ₹1L saves roughly ₹12,000 in interest over 5 years.',
+  },
+  {
+    q: 'What is the maximum tenure for a car loan in India?',
+    a: 'Most banks offer car loan tenures of 1 to 7 years. Longer tenure means lower EMI but significantly higher total interest. A 7-year loan on ₹8L at 9% costs ₹58,000 more in interest than a 5-year loan. Unless affordability is a strict constraint, 3–5 years is the sweet spot for most buyers.',
+  },
+  {
+    q: 'Can I prepay my car loan early without penalty?',
+    a: 'RBI guidelines prohibit banks from charging prepayment penalties on floating-rate car loans. However, fixed-rate car loans may have a prepayment charge of 1–3% of the outstanding amount. Check your loan agreement before making a lump-sum prepayment. Partial prepayment reduces either your EMI or tenure — ask the bank which option they offer.',
+  },
+  {
+    q: 'What documents are required for a car loan in India?',
+    a: 'Typically: identity proof (Aadhaar, PAN), address proof, latest 3–6 months bank statements, salary slips (last 3 months for salaried), ITR for 2–3 years (self-employed), and the car invoice/proforma from the dealer. The entire loan process, including e-KYC, can often be completed within 24–48 hours for pre-approved customers.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Car Loan EMI Calculator India',
+      url: 'https://globalsblog.com/tools/car-loan-calculator',
+      description,
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Auto">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Car Loan EMI Calculator</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">🏦 Finance Tool</span>
+    <h1 class="calc-hero-title">Car Loan EMI Calculator India</h1>
+    <p class="calc-hero-desc">
+      Calculate your exact monthly EMI, total interest, and total amount payable for any car loan.
+      Compare tenures and down payment scenarios to make the smartest financing decision.
+    </p>
+  </section>
+
+  <CarLoanCalculator client:load />
+
+  <section class="calc-section">
+    <h2>How to Get the Best Car Loan Deal in India</h2>
+    <p>A car loan is one of the most common retail loans in India, but the terms can vary dramatically between lenders. Understanding how EMI is calculated — and what levers you can pull — can save you tens of thousands of rupees over the loan tenure.</p>
+
+    <h3>EMI Comparison: ₹10 Lakh Car at Different Tenures (9% p.a.)</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Loan Amount</th>
+            <th>Tenure</th>
+            <th>Monthly EMI</th>
+            <th>Total Interest</th>
+            <th>Total Payable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>₹8,00,000</td><td>3 years</td><td>₹25,435</td><td>₹1,15,660</td><td>₹9,15,660</td></tr>
+          <tr><td>₹8,00,000</td><td>5 years</td><td>₹16,603</td><td>₹1,96,180</td><td>₹9,96,180</td></tr>
+          <tr><td>₹8,00,000</td><td>7 years</td><td>₹12,843</td><td>₹2,78,812</td><td>₹10,78,812</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Going from 5 years to 7 years saves ₹3,760/month in EMI, but costs ₹82,632 extra in interest. Is the lower EMI worth paying that extra amount? This is the core trade-off every car buyer faces.</p>
+
+    <h3>Impact of Down Payment on EMI</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Car Price</th>
+            <th>Down Payment</th>
+            <th>Loan Amount</th>
+            <th>EMI (5 yr, 9%)</th>
+            <th>Total Payable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>₹10,00,000</td><td>₹1,00,000 (10%)</td><td>₹9,00,000</td><td>₹18,679</td><td>₹11,20,740</td></tr>
+          <tr><td>₹10,00,000</td><td>₹2,00,000 (20%)</td><td>₹8,00,000</td><td>₹16,603</td><td>₹9,96,180</td></tr>
+          <tr><td>₹10,00,000</td><td>₹3,00,000 (30%)</td><td>₹7,00,000</td><td>₹14,527</td><td>₹8,71,620</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Car Loan Interest Rates by Major Banks (2025)</h3>
+    <ul>
+      <li><strong>SBI:</strong> 8.75% onwards (lowest for government employees)</li>
+      <li><strong>HDFC Bank:</strong> 8.65% – 11.5% depending on profile</li>
+      <li><strong>ICICI Bank:</strong> 8.9% – 12%</li>
+      <li><strong>Axis Bank:</strong> 8.7% – 13.5%</li>
+      <li><strong>Kotak Mahindra Bank:</strong> 8.75% – 14%</li>
+      <li><strong>Bank of Baroda:</strong> 8.4% – 10.6%</li>
+    </ul>
+    <p>Your credit score (CIBIL) is the single biggest factor determining your interest rate. A score above 750 typically qualifies you for the best available rates. Check your score for free on the CIBIL website or through banking apps before applying.</p>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/ev-savings-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⚡</span>
+        <span class="calc-tool-name">EV Savings Calculator</span>
+        <span class="calc-tool-desc">See if an EV is cheaper to run</span>
+      </a>
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">Estimate monthly fuel spend</span>
+      </a>
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Plan your next holiday budget</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Auto, travel & lifestyle stories</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="auto"
+    heading="Car Buying Guides & Auto Finance Articles"
+    subheading="Everything from choosing your first car to understanding loan options, insurance, and the best cars to buy in India right now."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

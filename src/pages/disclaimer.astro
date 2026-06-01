@@ -1,58 +1,149 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const lastUpdated = '1 June 2026';
 ---
 
 <Layout
 	title="Disclaimer | GlobalsBlog"
-	description="Read the GlobalsBlog disclaimer about informational content, article accuracy, external links, and general publishing limitations."
+	description="Read the GlobalsBlog disclaimer covering editorial content accuracy, calculator estimate limitations, external links, affiliate disclosure, and limitations of liability."
 >
 	<section class="content-page">
 		<div class="content-hero">
 			<p class="eyebrow">Disclaimer</p>
-			<h1>Important notes about the content published on GlobalsBlog.</h1>
+			<h1>Important notes about GlobalsBlog content and calculators.</h1>
 			<p class="lede">
-				All information on GlobalsBlog is published in good faith for general informational
-				purposes. While we aim to keep articles useful and accurate, we do not make guarantees
-				about completeness, reliability, or suitability for every situation.
+				All content and tools on GlobalsBlog are published in good faith for general informational
+				purposes. Please read this disclaimer carefully before relying on any article, guide, or
+				calculator result for important decisions. Last updated: <strong>{lastUpdated}</strong>.
 			</p>
 		</div>
 
 		<div class="content-grid">
 			<article class="content-card">
-				<h2>Editorial information</h2>
+
+				<h2>1. Editorial content</h2>
 				<p>
-					Content across travel, beauty, auto, and news categories is intended to inform readers
-					and should not be treated as professional legal, financial, medical, or technical
-					advice unless explicitly stated.
+					Articles across the travel, auto, beauty, and news categories are intended to inform
+					and assist readers. They should not be treated as professional legal, financial, medical,
+					or technical advice unless explicitly stated otherwise.
+				</p>
+				<p>
+					We strive to publish accurate, well-researched content. However, information can change —
+					prices, policies, regulations, and recommendations evolve over time. Always verify
+					critical information from official or professional sources before acting on it.
 				</p>
 
-				<h2>Accuracy and updates</h2>
+				<h2 style="margin-top:1.5rem">2. Calculator and tool results</h2>
 				<p>
-					Articles may be updated, corrected, or expanded over time. Information can change, and
-					some posts may become outdated after publication.
+					GlobalsBlog provides free online calculators including — but not limited to — the
+					Fuel Cost Calculator, Car Loan EMI Calculator, EV Savings Calculator, Toll Calculator,
+					Trip Cost Calculator, Travel Budget Planner, Road Trip Planner, and Train vs Flight
+					Calculator.
+				</p>
+				<p>
+					<strong>All calculator results are estimates only.</strong> Specifically:
+				</p>
+				<ul class="content-list">
+					<li>
+						<strong>Car Loan EMI:</strong> EMI calculations use the standard reducing-balance
+						formula but do not account for processing fees, GST, insurance add-ons, prepayment
+						charges, or other terms specific to individual lenders. Always confirm the final
+						EMI and total cost with your bank or NBFC before signing any loan agreement.
+					</li>
+					<li>
+						<strong>Fuel Cost:</strong> Results depend entirely on the mileage and fuel price
+						values you enter. Real-world fuel consumption varies with driving conditions, vehicle
+						condition, AC use, load, and road type.
+					</li>
+					<li>
+						<strong>Toll Charges:</strong> Toll estimates are based on approximate NHAI average
+						rates per vehicle category. Actual toll charges vary by highway, state, toll plaza
+						operator, and season. Use the official NHAI portal or FASTag app for exact rates.
+					</li>
+					<li>
+						<strong>EV Savings:</strong> Savings projections assume consistent monthly usage,
+						stable electricity rates, and no changes to petrol prices. Actual savings may vary
+						significantly based on charging habits, battery degradation, and market conditions.
+					</li>
+					<li>
+						<strong>Trip, Road Trip & Budget Calculators:</strong> Cost estimates are based
+						on average market rates and user-provided inputs. Actual travel costs depend on
+						seasonal pricing, booking timing, destination, travel style, and individual spending.
+					</li>
+					<li>
+						<strong>Train vs Flight:</strong> Fare comparisons use prices you input manually.
+						Actual fares fluctuate with availability, season, and booking class.
+					</li>
+				</ul>
+				<p>
+					<strong>None of the calculator results constitute financial, investment, or professional
+					advice.</strong> For significant financial decisions such as car loans or large travel
+					expenditure, consult a qualified financial adviser.
 				</p>
 
-				<h2>Affiliate, sponsored, or ad-supported content</h2>
+				<h2 style="margin-top:1.5rem">3. Accuracy and updates</h2>
 				<p>
-					GlobalsBlog may display advertising or publish sponsored or commercial content in the
-					future. Where appropriate, such relationships should be disclosed according to the
-					site’s publishing practices.
+					Articles and calculator defaults (example values, rate estimates) may be updated,
+					corrected, or expanded over time. Some posts may become outdated after publication.
+					The "last updated" date on articles, where shown, reflects the most recent revision.
 				</p>
+
+				<h2 style="margin-top:1.5rem">4. Affiliate, advertising & sponsored content</h2>
+				<p>
+					GlobalsBlog displays advertising through Google AdSense. The site may also publish
+					sponsored or commercially-supported content in the future. Where applicable, such
+					relationships will be disclosed clearly within or adjacent to the relevant content.
+					Advertising revenue does not influence editorial decisions or calculator methodologies.
+				</p>
+
+				<h2 style="margin-top:1.5rem">5. External websites</h2>
+				<p>
+					GlobalsBlog may link to external websites for reference or convenience. We are not
+					responsible for the content, accuracy, availability, or privacy practices of any
+					third-party website. Following an external link is at your own discretion.
+				</p>
+
+				<h2 style="margin-top:1.5rem">6. Limitation of liability</h2>
+				<p>
+					To the fullest extent permitted by law, GlobalsBlog and its operators accept no
+					liability for any direct, indirect, or consequential loss or damage arising from
+					your use of the site, its articles, or its calculator results — including but not
+					limited to financial loss resulting from decisions made based on calculator estimates.
+				</p>
+
 			</article>
 
-			<aside class="content-card content-card-accent">
-				<h2>External websites</h2>
-				<p>
-					If you follow a link from GlobalsBlog to another website, you do so at your own
-					discretion. We are not responsible for the availability, accuracy, or policies of
-					external websites.
-				</p>
+			<aside>
+				<div class="content-card content-card-accent" style="position:sticky;top:1.5rem">
+					<h2>Key takeaways</h2>
+					<ul class="content-list">
+						<li>Articles are informational — not professional advice</li>
+						<li>Calculator results are <strong>estimates only</strong></li>
+						<li>Car loan EMI does not include bank fees or insurance</li>
+						<li>Toll estimates are based on NHAI averages, not exact rates</li>
+						<li>Always verify important information with official or professional sources</li>
+					</ul>
 
-				<h2>Contact for concerns</h2>
-				<p>
-					If you have concerns about any page or article, contact
-					<a href="mailto:contact@globalsblog.com">contact@globalsblog.com</a>.
-				</p>
+					<h2 style="margin-top:1.5rem">Contact for concerns</h2>
+					<p>
+						If you believe any content or calculator result is inaccurate or misleading,
+						please contact us:
+					</p>
+					<p>
+						<a href="mailto:contact@globalsblog.com">contact@globalsblog.com</a>
+					</p>
+					<p style="margin-top:0.75rem">
+						<a href="/contact-us">Contact page →</a>
+					</p>
+
+					<h2 style="margin-top:1.5rem">Related pages</h2>
+					<ul class="content-list">
+						<li><a href="/privacy-policy">Privacy Policy</a></li>
+						<li><a href="/terms-and-conditions">Terms and Conditions</a></li>
+						<li><a href="/tools">Calculator tools</a></li>
+					</ul>
+				</div>
 			</aside>
 		</div>
 	</section>

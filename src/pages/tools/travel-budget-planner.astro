@@ -1,0 +1,188 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TravelBudgetPlanner from '../../components/calculators/TravelBudgetPlanner.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Travel Budget Planner India — Plan Your Complete Holiday Budget Category by Category';
+const description = 'Plan your travel budget in detail with our free India travel budget planner. Break down accommodation, food, transport, activities, and shopping costs. Get per-person and per-day estimates instantly.';
+
+const faqs = [
+  {
+    q: 'How do I use the travel budget planner?',
+    a: 'Enter your destination, trip duration, and number of travellers. Then fill in your per-night accommodation cost, daily food budget per person, total transport cost (flights/trains booked), daily activities budget, shopping allocation, and choose an emergency buffer percentage. Hit "Plan My Budget" for a full breakdown.',
+  },
+  {
+    q: 'What percentage emergency buffer should I add?',
+    a: 'We recommend 10–15% for most trips. A 10% buffer handles small unexpected costs like medical expenses, entry fee increases, or a taxi breakdown. Choose 15–20% for adventure trips, remote destinations, or if travelling with children. First-time travellers to a new region should err on the higher side.',
+  },
+  {
+    q: 'How much should I budget for accommodation in India?',
+    a: 'Hostel dormitories: ₹400–800/bed/night. Budget guesthouses: ₹800–1,500/room. Budget hotels (2-star): ₹1,200–2,500/room. Mid-range (3-star): ₹2,500–5,000/room. Premium (4–5 star): ₹7,000–25,000+/room. The planner assumes 2 people share a room, so 4 travellers need 2 rooms unless in a dormitory.',
+  },
+  {
+    q: 'What should I include in the activities budget?',
+    a: 'Include monument entry fees (typically ₹50–1,100 per person), guided tours, water sports, trekking permits, wildlife safari fees, cooking classes, cultural shows, and any adventure activities. Popular activities like Rishikesh rafting (₹600–1,200/person) or Andaman scuba diving (₹4,000–8,000/person) can significantly impact your daily activities budget.',
+  },
+  {
+    q: 'How much should I budget for local transport within the destination?',
+    a: 'Local transport (autos, taxis, local buses, metros) typically costs ₹200–600 per person per day depending on the city and how much you move around. App cabs (Ola, Uber) are cheapest in major cities. In hill stations and smaller towns, rely on shared jeeps and local buses for the best rates.',
+  },
+  {
+    q: 'Should I exchange currency before travelling to a different state?',
+    a: 'For domestic travel within India, INR is used everywhere. However, some tourist areas in states like Sikkim, Arunachal Pradesh, and border areas may require permits that must be organised in advance. Budget ₹500–2,000 per person for any required permits in restricted areas.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Travel Budget Planner India',
+      url: 'https://globalsblog.com/tools/travel-budget-planner',
+      description,
+      applicationCategory: 'TravelApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Travel">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Travel Budget Planner</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">📋 Planning Tool</span>
+    <h1 class="calc-hero-title">Travel Budget Planner India</h1>
+    <p class="calc-hero-desc">
+      Plan every rupee of your trip. Get a complete, category-by-category budget breakdown
+      with per-person and daily estimates — then copy or share your plan instantly.
+    </p>
+  </section>
+
+  <TravelBudgetPlanner client:load />
+
+  <section class="calc-section">
+    <h2>How to Plan a Travel Budget — The Smart Way</h2>
+    <p>The most common travel budget mistake is calculating only the big-ticket items — flights and hotel — and forgetting the dozens of smaller costs that add up: local transport, entry fees, SIM cards, tips, laundry, medications, and the inevitable souvenir purchase. A complete budget covers all six categories: accommodation, food, transport, activities, shopping, and a buffer.</p>
+
+    <h3>The 50-30-20 Travel Budget Rule</h3>
+    <p>A useful heuristic for balanced travel spending:</p>
+    <ul>
+      <li><strong>50% on accommodation + transport:</strong> These fixed costs set the foundation. Don't let them exceed half your budget.</li>
+      <li><strong>30% on food + activities:</strong> This is where you actually experience the destination. Skimping here diminishes the trip.</li>
+      <li><strong>20% on shopping + buffer:</strong> Souvenirs, gifts, and the unforeseen. The buffer saves the trip when things go sideways.</li>
+    </ul>
+
+    <h3>Daily Budget Benchmarks for Indian Travel</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Travel Style</th>
+            <th>Daily Budget per Person</th>
+            <th>What You Get</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Backpacker</td><td>₹800 – ₹1,500</td><td>Dormitory bed, dhabas, local buses, free sights</td></tr>
+          <tr><td>Budget Traveller</td><td>₹1,500 – ₹3,000</td><td>Budget hotel, mid-range meals, a few paid activities</td></tr>
+          <tr><td>Mid-range</td><td>₹3,000 – ₹7,000</td><td>3-star hotel, restaurant meals, guided tours</td></tr>
+          <tr><td>Comfort</td><td>₹7,000 – ₹15,000</td><td>4-star hotel, fine dining, private transport</td></tr>
+          <tr><td>Luxury</td><td>₹15,000+</td><td>5-star, spa, private experiences, business class</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>India Travel Budget Tips from Experienced Travellers</h3>
+    <ul>
+      <li>Use IRCTC's tourist quota for trains — it releases seats close to the travel date that regular quota doesn't show.</li>
+      <li>Airbnb and budget homestays often provide better value than hotels of the same price range, with kitchen access saving on food costs.</li>
+      <li>Many museums and national parks have free or discounted entry on specific days — check before you go.</li>
+      <li>OTP-based digital payments (UPI/PhonePe/Google Pay) are accepted nearly everywhere in India — carry minimal cash.</li>
+      <li>Travelling during state holidays (rather than national holidays) avoids the worst crowds while still giving you festive atmosphere.</li>
+    </ul>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Quick total trip cost estimate</span>
+      </a>
+      <a href="/tools/road-trip-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">🗺</span>
+        <span class="calc-tool-name">Road Trip Planner</span>
+        <span class="calc-tool-desc">Plan a self-drive adventure budget</span>
+      </a>
+      <a href="/tools/train-vs-flight-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">🆚</span>
+        <span class="calc-tool-name">Train vs Flight</span>
+        <span class="calc-tool-desc">Which transport saves more?</span>
+      </a>
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">Estimate driving fuel expenses</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Travel guides & destination stories</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="travel"
+    heading="Travel Planning Guides — Budget, Destinations & Tips"
+    subheading="From cheap weekend escapes to detailed 7-day itineraries — our travel guides help you plan smarter and spend less."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

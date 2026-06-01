@@ -1,0 +1,178 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import '../../styles/calculator.css';
+
+const title = 'Free Travel & Auto Calculators for India — Fuel, EMI, EV Savings | GlobalsBlog';
+const description = 'Free online calculators for Indian travellers and car owners. Calculate fuel cost, car loan EMI, EV savings, road trip budget, toll charges, and compare train vs flight costs. Instant results, no signup required.';
+
+const tools = [
+  {
+    icon: '⛽',
+    name: 'Fuel Cost Calculator',
+    desc: 'Calculate petrol or diesel cost for any trip. Enter distance, mileage, and current fuel price for an instant estimate.',
+    href: '/tools/fuel-cost-calculator',
+    cta: 'Calculate fuel cost →',
+    keywords: 'petrol cost, road trip fuel, km per litre',
+  },
+  {
+    icon: '🚧',
+    name: 'Toll Calculator',
+    desc: 'Estimate highway toll charges for your vehicle type. Get FASTag vs cash comparisons for national highways.',
+    href: '/tools/toll-calculator',
+    cta: 'Estimate toll charges →',
+    keywords: 'NHAI toll, FASTag, highway charges',
+  },
+  {
+    icon: '⚡',
+    name: 'EV Savings Calculator',
+    desc: 'See how much you could save switching to an electric vehicle. Compare monthly and yearly fuel costs vs EV running costs.',
+    href: '/tools/ev-savings-calculator',
+    cta: 'Calculate EV savings →',
+    keywords: 'electric car savings, petrol vs EV, charging cost',
+  },
+  {
+    icon: '🏦',
+    name: 'Car Loan EMI Calculator',
+    desc: 'Calculate your monthly car loan EMI, total interest payable, and compare different loan tenures and interest rates.',
+    href: '/tools/car-loan-calculator',
+    cta: 'Calculate car EMI →',
+    keywords: 'car loan, EMI, auto finance',
+  },
+  {
+    icon: '✈',
+    name: 'Trip Cost Calculator',
+    desc: 'Estimate total trip cost including transport, hotel, food, and miscellaneous expenses for any Indian destination.',
+    href: '/tools/trip-cost-calculator',
+    cta: 'Estimate trip cost →',
+    keywords: 'travel budget, trip planning, India travel cost',
+  },
+  {
+    icon: '📋',
+    name: 'Travel Budget Planner',
+    desc: 'Plan your complete travel budget with a detailed breakdown of accommodation, food, transport, activities, and shopping.',
+    href: '/tools/travel-budget-planner',
+    cta: 'Plan my budget →',
+    keywords: 'vacation budget, holiday planning, travel expense',
+  },
+  {
+    icon: '🗺',
+    name: 'Road Trip Planner',
+    desc: 'Calculate the full cost of a road trip — fuel, tolls, accommodation, food, and activities — and get a per-person breakdown.',
+    href: '/tools/road-trip-planner',
+    cta: 'Plan road trip →',
+    keywords: 'road trip cost, highway journey, self-drive India',
+  },
+  {
+    icon: '🆚',
+    name: 'Train vs Flight Calculator',
+    desc: 'Compare the real cost and total travel time of taking a train versus flying, including airport transfers and check-in time.',
+    href: '/tools/train-vs-flight-calculator',
+    cta: 'Compare now →',
+    keywords: 'train vs flight India, travel comparison, faster cheaper',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Travel & Auto Calculators — GlobalsBlog',
+  description,
+  url: 'https://globalsblog.com/tools',
+  publisher: {
+    '@type': 'Organization',
+    name: 'GlobalsBlog',
+    url: 'https://globalsblog.com',
+  },
+  hasPart: tools.map(t => ({
+    '@type': 'WebApplication',
+    name: t.name,
+    url: `https://globalsblog.com${t.href}`,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+  })),
+};
+---
+
+<Layout title={title} description={description}>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="sep">›</span>
+    <span>Tools</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">Free Online Tools</span>
+    <h1 class="calc-hero-title">Travel &amp; Auto Calculators for India</h1>
+    <p class="calc-hero-desc">
+      Eight free, instant calculators built for Indian travellers and car owners.
+      No signup, no ads in the way — just accurate results in seconds.
+    </p>
+  </section>
+
+  <section style="margin-bottom: 1.5rem;">
+    <div class="tools-hub-grid">
+      {tools.map(tool => (
+        <a href={tool.href} class="tools-hub-card" aria-label={tool.name}>
+          <span class="tools-hub-icon">{tool.icon}</span>
+          <span class="tools-hub-title">{tool.name}</span>
+          <span class="tools-hub-desc">{tool.desc}</span>
+          <span class="tools-hub-cta">{tool.cta}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Why Use GlobalsBlog Calculators?</h2>
+    <p>Planning a trip or making a big financial decision — like buying a car — involves a lot of numbers. Our calculators are built specifically for the Indian context: they use rupees, Indian fuel prices, NHAI toll structures, and realistic cost estimates for travel within India.</p>
+
+    <h3>Built for Real Indian Travel</h3>
+    <p>Every calculator uses input defaults and examples drawn from real-world Indian travel. Whether you are planning a Mumbai to Goa road trip, comparing a Rajdhani Express ticket against a Spice Jet fare, or deciding between a Tata Nexon EV and its petrol version — our tools give you numbers that actually make sense.</p>
+
+    <h3>Fast, Private, and Free</h3>
+    <p>All calculations happen instantly in your browser. We do not store your inputs, require sign-in, or hide results behind paywalls. Share your results with friends or copy them to your notes with one click.</p>
+
+    <h3>Plan Smarter Trips</h3>
+    <p>The best trips are the ones where you know your budget before you leave. Use our <a href="/tools/travel-budget-planner">Travel Budget Planner</a> to set a realistic total, then use the <a href="/tools/trip-cost-calculator">Trip Cost Calculator</a> to cross-check your transport and hotel estimates. Run a quick <a href="/tools/train-vs-flight-calculator">Train vs Flight comparison</a> to pick the right mode — then pack your bags with confidence.</p>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {[
+        { q: 'Are these calculators free to use?', a: 'Yes — all calculators on GlobalsBlog are completely free. There is no signup, no subscription, and no hidden cost. You can use them as many times as you like.' },
+        { q: 'How accurate are the results?', a: 'The results are estimates based on the inputs you provide. Fuel cost calculations are accurate when you enter your car\'s real mileage and current fuel prices. Car loan EMI uses the standard reducing-balance formula used by all Indian banks. Toll estimates are based on NHAI average rates and may vary from actual charges at specific toll plazas.' },
+        { q: 'Can I save or share my results?', a: 'Yes — every calculator has a "Copy Results" button that copies a text summary to your clipboard. There is also a Share button that uses your device\'s native share sheet (WhatsApp, email, etc.) or copies a share-ready message if native sharing is not available.' },
+        { q: 'Do the calculators work on mobile?', a: 'All calculators are fully responsive and optimised for mobile phones. They work seamlessly on Android and iOS in any modern browser.' },
+        { q: 'Which calculator should I start with for trip planning?', a: 'Start with the Travel Budget Planner to set your overall budget, then use the Trip Cost Calculator or Road Trip Planner depending on how you are travelling. The Train vs Flight Calculator is great once you have narrowed down your route.' },
+      ].map(item => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;list-style:none;padding:1rem 0;">
+            <span>{item.q}</span>
+            <span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a" style="padding-bottom:1rem;color:var(--muted);line-height:1.7;font-size:0.95rem;">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Explore Our Travel &amp; Auto Guides</h2>
+    <p>Pair these calculators with our in-depth articles on travel planning, car buying, and road trips across India.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.75rem;">
+      <a href="/category/travel" style="padding:0.45rem 1rem;border-radius:100px;background:rgba(182,91,46,0.08);color:var(--accent);font-size:0.88rem;font-weight:600;text-decoration:none;">Travel Guides</a>
+      <a href="/category/auto" style="padding:0.45rem 1rem;border-radius:100px;background:rgba(182,91,46,0.08);color:var(--accent);font-size:0.88rem;font-weight:600;text-decoration:none;">Auto &amp; Cars</a>
+      <a href="/" style="padding:0.45rem 1rem;border-radius:100px;background:rgba(182,91,46,0.08);color:var(--accent);font-size:0.88rem;font-weight:600;text-decoration:none;">← Back to Home</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; display: inline-flex; }
+</style>

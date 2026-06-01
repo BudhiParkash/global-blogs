@@ -1,0 +1,182 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TripCostCalculator from '../../components/calculators/TripCostCalculator.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Trip Cost Calculator India — Estimate Total Travel Expense for Any Destination';
+const description = 'Free trip cost calculator for India. Estimate total holiday expenses including transport, hotel, food, and miscellaneous costs for any number of travellers and days. Instant, no signup required.';
+
+const faqs = [
+  {
+    q: 'How does the trip cost calculator estimate transport costs?',
+    a: 'Transport costs are estimated using average per-km, per-person rates for each mode: flights (~₹5.5/km/person), trains (~₹0.70/km/person), buses (~₹0.45/km/person), and self-drive (~₹2.2/km/person including fuel). These are indicative averages — actual fares vary significantly by route, booking time, and class.',
+  },
+  {
+    q: 'What average hotel budget should I use for different destinations?',
+    a: 'Budget: ₹800–1,500/room/night (dormitories, budget guesthouses). Mid-range: ₹2,000–5,000/room/night (3-star hotels, homestays). Premium: ₹7,000–20,000/room/night (4–5 star hotels). Goa, Shimla, and Manali tend to be 30–50% more expensive during peak season. Rajasthan heritage hotels can be ₹5,000–25,000+.',
+  },
+  {
+    q: 'What is a realistic daily food budget for travel in India?',
+    a: 'Street food / dhabas: ₹200–400/person/day. Mid-range restaurants: ₹500–900/person/day. Cafes and restaurants in tourist areas: ₹800–1,500/person/day. Fine dining / resort dining: ₹1,500–4,000+/person/day. Coastal destinations like Goa and Kerala have higher restaurant prices than inland cities.',
+  },
+  {
+    q: 'Should I book transport in advance or at the last minute?',
+    a: 'For train travel, booking 60–90 days in advance (when Tatkal and premium quotas open) gives the best availability and prices on popular routes. Flight prices in India are lowest 3–6 weeks before departure for domestic routes. Last-minute bus and self-drive are generally available without planning, though prices spike during festivals and holidays.',
+  },
+  {
+    q: 'How much extra should I budget for local sightseeing and activities?',
+    a: 'Entry fees and local sightseeing typically add ₹300–800 per person per day. Famous sites like Taj Mahal charge ₹50 (Indian) to ₹1,100 (foreigner). Activity-heavy destinations (water parks, adventure sports in Rishikesh, scuba in Andamans) can cost ₹1,500–5,000 per day extra per person.',
+  },
+  {
+    q: 'What is the average cost of a 5-day trip to Goa for 2 people?',
+    a: 'Budget: ₹25,000–35,000 (bus/sleeper train, budget accommodation, local food). Mid-range: ₹45,000–70,000 (flight, 3-star hotel near beach, decent restaurants). Premium: ₹1,00,000+ (direct flights, 5-star resort, fine dining). These estimates include round-trip transport from Mumbai or Bengaluru.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Trip Cost Calculator India',
+      url: 'https://globalsblog.com/tools/trip-cost-calculator',
+      description,
+      applicationCategory: 'TravelApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Travel">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Trip Cost Calculator</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">✈ Travel Tool</span>
+    <h1 class="calc-hero-title">Trip Cost Calculator India</h1>
+    <p class="calc-hero-desc">
+      Get a complete estimate of your holiday expenses — transport, hotel, food, and miscellaneous costs —
+      for any destination in India. Works for solo travellers and groups.
+    </p>
+  </section>
+
+  <TripCostCalculator client:load />
+
+  <section class="calc-section">
+    <h2>Average Trip Costs for Popular Indian Destinations</h2>
+    <p>India is one of the most diverse travel destinations in the world, with trip costs varying dramatically by destination, season, and travel style. Here is a quick reference to set your expectations:</p>
+
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Destination</th>
+            <th>Duration</th>
+            <th>Budget (2 pax)</th>
+            <th>Mid-range (2 pax)</th>
+            <th>Best Season</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Goa</td><td>5 days</td><td>₹30,000</td><td>₹65,000</td><td>Nov–Feb</td></tr>
+          <tr><td>Rajasthan (Jaipur+Jodhpur+Jaisalmer)</td><td>7 days</td><td>₹35,000</td><td>₹75,000</td><td>Oct–Mar</td></tr>
+          <tr><td>Kerala (Munnar+Alleppey)</td><td>6 days</td><td>₹32,000</td><td>₹70,000</td><td>Sep–Mar</td></tr>
+          <tr><td>Himachal Pradesh (Manali+Kasol)</td><td>7 days</td><td>₹28,000</td><td>₹55,000</td><td>May–Jun, Sep–Oct</td></tr>
+          <tr><td>Andaman Islands</td><td>6 days</td><td>₹50,000</td><td>₹1,00,000</td><td>Nov–Apr</td></tr>
+          <tr><td>Varanasi</td><td>3 days</td><td>₹12,000</td><td>₹28,000</td><td>Oct–Mar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How to Save Money on Indian Travel</h3>
+    <ul>
+      <li><strong>Book trains early:</strong> General tatkal quota opens 1 day before departure; premium tatkal is pricier. The 60-day advance booking window gives the most options.</li>
+      <li><strong>Travel shoulder season:</strong> Prices in Goa drop 40–60% outside December–January peak. Himachal is cheapest in March–April and October–November.</li>
+      <li><strong>Group travel economics:</strong> Splitting accommodation costs between 3–4 people can halve your per-person hotel cost, especially in homestays and budget hotels.</li>
+      <li><strong>Eat local:</strong> A thali at a local dhaba costs ₹80–150; the same meal at a beach shack in Goa is ₹400–600. Mix local and tourist dining for the best balance.</li>
+      <li><strong>Use overnight transport:</strong> Overnight trains and Volvo buses save you a hotel night while covering distance — a classic backpacker trick that still works brilliantly in India.</li>
+    </ul>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/travel-budget-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">📋</span>
+        <span class="calc-tool-name">Travel Budget Planner</span>
+        <span class="calc-tool-desc">Detailed category-by-category budget</span>
+      </a>
+      <a href="/tools/train-vs-flight-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">🆚</span>
+        <span class="calc-tool-name">Train vs Flight</span>
+        <span class="calc-tool-desc">Pick the best transport for your route</span>
+      </a>
+      <a href="/tools/road-trip-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">🗺</span>
+        <span class="calc-tool-name">Road Trip Planner</span>
+        <span class="calc-tool-desc">Plan a self-drive trip budget</span>
+      </a>
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">Calculate petrol cost for driving</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">India travel guides & stories</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="travel"
+    heading="India Travel Guides — Destinations, Budgets & Itineraries"
+    subheading="Detailed destination guides, budget travel tips, and practical itineraries for the best places to visit across India."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

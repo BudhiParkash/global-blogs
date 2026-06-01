@@ -1,0 +1,189 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RoadTripPlanner from '../../components/calculators/RoadTripPlanner.tsx';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import '../../styles/calculator.css';
+
+const title = 'Road Trip Planner India — Calculate Complete Road Trip Cost: Fuel, Tolls, Hotel & Food';
+const description = 'Plan your road trip budget with our free India road trip planner. Calculate fuel cost, toll charges, accommodation, food, and activities for any self-drive journey. Get per-person breakdown instantly.';
+
+const faqs = [
+  {
+    q: 'What costs should I include when planning a road trip in India?',
+    a: 'A complete road trip budget includes: fuel (the biggest variable), toll charges (₹150–1,200+ depending on the highway), accommodation (₹800–5,000/room/night), food (₹400–1,500/person/day), activities and entry fees (₹200–1,000/person/day), and an emergency buffer (keep ₹3,000–5,000 extra for breakdowns or unexpected stops).',
+  },
+  {
+    q: 'How do I calculate fuel cost for a road trip?',
+    a: 'Fuel cost = (Total distance ÷ Mileage) × Fuel price per litre. Example: A 1,200 km round trip in a car giving 14 km/L at ₹102/L costs (1,200 ÷ 14) × 102 = ₹8,743. Remember to account for highway driving being slightly more efficient than city driving (higher mileage on highways for most cars).',
+  },
+  {
+    q: 'What are the best road trips in India for 2025?',
+    a: 'Top road trips in India: (1) Manali–Leh Highway (476 km, stunning Himalayan landscape, open May–Oct). (2) Mumbai to Goa via NH 66 (600 km, coastal beauty). (3) Delhi to Rajasthan Circuit (Jaipur, Jodhpur, Jaisalmer — ~1,200 km loop). (4) Bengaluru to Coorg and Ooty (450 km, coffee estates and hill stations). (5) Spiti Valley Circuit from Shimla (450 km, extreme terrain, open May–Oct).',
+  },
+  {
+    q: 'What documents do I need for a road trip across Indian states?',
+    a: 'You need: valid driving licence, vehicle registration certificate (RC), vehicle insurance (third-party at minimum, comprehensive recommended), pollution under control (PUC) certificate, and FASTag linked to the vehicle. For some national parks and wildlife sanctuaries, you may need to obtain specific permits. The Leh-Ladakh highway requires Inner Line Permits for certain zones.',
+  },
+  {
+    q: 'How much does fuel cost for a Mumbai to Goa road trip?',
+    a: 'Mumbai to Goa is approximately 600 km (one way) via NH 66. For a return trip of 1,200 km in a car giving 14 km/L at ₹102/L: fuel = (1,200 ÷ 14) × 102 ≈ ₹8,743. Add toll charges of approximately ₹600–800 (FASTag). Total vehicle running cost for the trip: ₹9,300–9,600.',
+  },
+  {
+    q: 'What emergency kit should I carry on a long road trip in India?',
+    a: 'Essential road trip emergency items: spare tyre (and jack, wheel spanner), jumper cables, basic toolkit, tyre inflation pump (12V), emergency reflective triangles, first aid kit, water (4–6 litres), power bank, car charger, physical maps of the route (mobile signal is unreliable in remote areas), and a list of roadside assistance numbers for your insurance provider.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Road Trip Planner India',
+      url: 'https://globalsblog.com/tools/road-trip-planner',
+      description,
+      applicationCategory: 'TravelApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+      provider: { '@type': 'Organization', name: 'GlobalsBlog', url: 'https://globalsblog.com' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description} category="Travel">
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <nav class="calc-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a><span class="sep">›</span>
+    <a href="/tools">Tools</a><span class="sep">›</span>
+    <span>Road Trip Planner</span>
+  </nav>
+
+  <section class="calc-hero">
+    <span class="calc-badge">🗺 Road Trip Tool</span>
+    <h1 class="calc-hero-title">Road Trip Planner India</h1>
+    <p class="calc-hero-desc">
+      Calculate the full cost of your self-drive adventure — fuel, tolls, accommodation, food,
+      and activities — with a clear per-person breakdown for any group size.
+    </p>
+  </section>
+
+  <RoadTripPlanner client:load />
+
+  <section class="calc-section">
+    <h2>Planning the Perfect Road Trip in India</h2>
+    <p>India's highway network has transformed dramatically in the last decade. With expressways, well-maintained national highways, and stunning scenic routes, self-drive road trips are now more accessible — and enjoyable — than ever. The key to a great road trip is knowing your numbers before you leave the driveway.</p>
+
+    <h3>India's Best Road Trips and Estimated Costs</h3>
+    <div style="overflow-x:auto;">
+      <table class="calc-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Total Distance</th>
+            <th>Fuel Cost (14 km/L)</th>
+            <th>Recommended Days</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mumbai → Goa (NH 66, coastal)</td><td>1,200 km RT</td><td>~₹8,740</td><td>6–7 days</td></tr>
+          <tr><td>Delhi → Rajasthan circuit</td><td>1,400 km loop</td><td>~₹10,200</td><td>8–10 days</td></tr>
+          <tr><td>Bengaluru → Coorg → Ooty</td><td>900 km loop</td><td>~₹6,550</td><td>5–6 days</td></tr>
+          <tr><td>Manali → Leh</td><td>950 km RT</td><td>~₹6,900</td><td>7–9 days</td></tr>
+          <tr><td>Delhi → Agra → Varanasi</td><td>1,100 km RT</td><td>~₹8,000</td><td>6–7 days</td></tr>
+          <tr><td>Pune → Mahabaleshwar → Kolhapur</td><td>450 km loop</td><td>~₹3,280</td><td>3–4 days</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Road Trip Cost Per Person — How to Maximise Savings</h3>
+    <p>The biggest advantage of a road trip over other travel is that the major fixed costs (fuel + toll) are shared across all passengers. A solo driver pays the full fuel cost; four friends split it equally. This means road trips become progressively cheaper per person the more people you travel with — up to the car's capacity.</p>
+    <ul>
+      <li><strong>4 people in an SUV</strong> giving 12 km/L on a 1,000 km round trip at ₹102/L = ₹21,250 total fuel, or just <strong>₹5,313 per person</strong>.</li>
+      <li>The same trip solo = ₹21,250 fuel per person — four times more expensive.</li>
+    </ul>
+
+    <h3>Before You Leave: Road Trip Checklist</h3>
+    <ul>
+      <li>Service your car (oil, coolant, brake fluid, air filter, tyre pressure) before a long trip.</li>
+      <li>Recharge your FASTag — verify the balance is sufficient for the entire trip.</li>
+      <li>Download offline maps on Google Maps or Maps.me — mobile signal drops in mountain and forest areas.</li>
+      <li>Book accommodation for at least the first and last nights before departing.</li>
+      <li>Carry a basic first-aid kit and enough water for each person for a half-day.</li>
+    </ul>
+  </section>
+
+  <section class="calc-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="calc-faq-list">
+      {faqs.map(f => (
+        <details class="calc-faq-item">
+          <summary class="calc-faq-q">
+            <span>{f.q}</span><span class="faq-icon">+</span>
+          </summary>
+          <p class="calc-faq-a">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="calc-section">
+    <h2>Related Calculators</h2>
+    <div class="calc-tools-grid">
+      <a href="/tools/fuel-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">⛽</span>
+        <span class="calc-tool-name">Fuel Cost Calculator</span>
+        <span class="calc-tool-desc">Quick fuel expense estimate</span>
+      </a>
+      <a href="/tools/toll-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">🚧</span>
+        <span class="calc-tool-name">Toll Calculator</span>
+        <span class="calc-tool-desc">Estimate highway toll charges</span>
+      </a>
+      <a href="/tools/trip-cost-calculator" class="calc-tool-card">
+        <span class="calc-tool-icon">✈</span>
+        <span class="calc-tool-name">Trip Cost Calculator</span>
+        <span class="calc-tool-desc">Compare drive vs fly costs</span>
+      </a>
+      <a href="/tools/travel-budget-planner" class="calc-tool-card">
+        <span class="calc-tool-icon">📋</span>
+        <span class="calc-tool-name">Travel Budget Planner</span>
+        <span class="calc-tool-desc">Detailed category budget plan</span>
+      </a>
+      <a href="/tools" class="calc-tool-card">
+        <span class="calc-tool-icon">🧰</span>
+        <span class="calc-tool-name">All Calculators</span>
+        <span class="calc-tool-desc">Browse all free tools</span>
+      </a>
+      <a href="/" class="calc-tool-card">
+        <span class="calc-tool-icon">🏠</span>
+        <span class="calc-tool-name">GlobalsBlog Home</span>
+        <span class="calc-tool-desc">Road trip guides & travel stories</span>
+      </a>
+    </div>
+  </section>
+
+  <RelatedPosts
+    category="travel"
+    heading="Road Trip & Self-Drive Travel Guides from GlobalsBlog"
+    subheading="Inspiring road trip routes, packing lists, highway driving tips, and the best self-drive destinations in India."
+  />
+</Layout>
+
+<style>
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .faq-icon { transform: rotate(45deg); }
+  details summary .faq-icon { transition: transform 250ms ease; }
+  .calc-faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0; background: none; border: none; text-align: left; font-size: 0.98rem; font-weight: 700; color: var(--ink-strong); cursor: pointer; }
+  .calc-faq-a { padding-bottom: 1rem; color: var(--muted); line-height: 1.72; font-size: 0.95rem; margin: 0; }
+</style>

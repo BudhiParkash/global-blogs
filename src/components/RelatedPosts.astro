@@ -1,0 +1,250 @@
+---
+import { createClient } from '@supabase/supabase-js';
+
+interface Props {
+  category: string;
+  heading?: string;
+  subheading?: string;
+}
+
+const {
+  category,
+  heading,
+  subheading,
+} = Astro.props;
+
+const resolvedHeading =
+  heading ??
+  (category === 'auto'
+    ? 'Auto Guides & Car Buying Articles'
+    : 'Travel Guides & Trip Planning Articles');
+
+const resolvedSub =
+  subheading ??
+  (category === 'auto'
+    ? 'In-depth car reviews, fuel efficiency tips, EV guides, and auto buying advice from GlobalsBlog.'
+    : 'Destination guides, budget travel tips, road trip itineraries, and practical travel advice.');
+
+const supabase = createClient(
+  import.meta.env.SUPABASE_URL,
+  import.meta.env.SUPABASE_ANON_KEY
+);
+
+const { data: posts } = await supabase
+  .from('posts')
+  .select('slug, title, description, hero_image, published_at, categories!inner(name, slug)')
+  .eq('is_published', true)
+  .eq('categories.slug', category)
+  .order('published_at', { ascending: false })
+  .limit(3);
+
+const hasPosts = posts && posts.length > 0;
+
+const getUrl = (post: any) => {
+  const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+  const catSlug = (cat?.slug as string) || category;
+  return `/${catSlug}/${post.slug as string}`;
+};
+
+const formatDate = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
+
+const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+---
+
+{hasPosts && (
+  <section class="rp-section">
+    <div class="rp-top">
+      <div>
+        <p class="rp-eyebrow">From Our Blog</p>
+        <h2 class="rp-heading">{resolvedHeading}</h2>
+        <p class="rp-desc">{resolvedSub}</p>
+      </div>
+      <a href={`/category/${category}`} class="rp-all-link">
+        All {categoryLabel} articles →
+      </a>
+    </div>
+
+    <div class="rp-grid">
+      {posts!.map((post: any) => (
+        <article class="rp-card">
+          <a href={getUrl(post)}>
+            {post.hero_image && (
+              <img
+                src={post.hero_image as string}
+                alt={post.title as string}
+                width="600"
+                height="375"
+                loading="lazy"
+              />
+            )}
+            <div class="rp-body">
+              <span class="rp-tag">{categoryLabel}</span>
+              <h3>{post.title as string}</h3>
+              {post.description && <p>{post.description as string}</p>}
+              {post.published_at && (
+                <time datetime={post.published_at as string}>
+                  {formatDate(post.published_at as string)}
+                </time>
+              )}
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .rp-section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.4rem, 3vw, 2.4rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .rp-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  .rp-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin: 0 0 0.45rem;
+  }
+
+  .rp-heading {
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    letter-spacing: -0.025em;
+    margin: 0 0 0.45rem;
+    color: var(--ink-strong);
+  }
+
+  .rp-desc {
+    color: var(--muted);
+    font-size: 0.93rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 56ch;
+  }
+
+  .rp-all-link {
+    flex-shrink: 0;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms ease;
+    padding-bottom: 1px;
+    white-space: nowrap;
+  }
+
+  .rp-all-link:hover {
+    border-color: var(--accent-strong);
+  }
+
+  .rp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+  }
+
+  .rp-card a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    background: var(--surface-strong);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .rp-card a:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-tight);
+  }
+
+  .rp-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+  }
+
+  .rp-body {
+    padding: 1rem 1.1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .rp-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent-strong);
+    margin-bottom: 0.45rem;
+  }
+
+  .rp-body h3 {
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--ink-strong);
+    margin: 0 0 0.4rem;
+  }
+
+  .rp-body p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .rp-body time {
+    display: block;
+    margin-top: 0.7rem;
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 720px) {
+    .rp-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .rp-grid {
+      grid-template-columns: 1fr;
+    }
+    .rp-top {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

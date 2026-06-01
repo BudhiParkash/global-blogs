@@ -76,6 +76,33 @@ const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 
 const { category: categoryParam } = Astro.params;
 
+const categoryLower = (categoryParam ?? '').toLowerCase();
+const showTools = categoryLower === 'travel' || categoryLower === 'auto';
+
+const travelTools = [
+  { icon: '✈', name: 'Trip Cost Calculator', desc: 'Estimate total holiday cost — transport, hotel, food & more.', href: '/tools/trip-cost-calculator' },
+  { icon: '📋', name: 'Travel Budget Planner', desc: 'Plan every rupee with a full category-by-category breakdown.', href: '/tools/travel-budget-planner' },
+  { icon: '🗺', name: 'Road Trip Planner', desc: 'Calculate fuel, tolls, food & accommodation for any self-drive trip.', href: '/tools/road-trip-planner' },
+  { icon: '🆚', name: 'Train vs Flight', desc: 'Compare real cost and door-to-door time for any Indian route.', href: '/tools/train-vs-flight-calculator' },
+];
+
+const autoTools = [
+  { icon: '⛽', name: 'Fuel Cost Calculator', desc: 'Calculate petrol or diesel expense for any trip instantly.', href: '/tools/fuel-cost-calculator' },
+  { icon: '⚡', name: 'EV Savings Calculator', desc: 'See how much you save switching from petrol to electric.', href: '/tools/ev-savings-calculator' },
+  { icon: '🏦', name: 'Car Loan EMI Calculator', desc: 'Find your monthly EMI, total interest & best loan tenure.', href: '/tools/car-loan-calculator' },
+  { icon: '🚧', name: 'Toll Calculator', desc: 'Estimate highway toll charges with FASTag vs cash comparison.', href: '/tools/toll-calculator' },
+];
+
+const pageTools = categoryLower === 'travel' ? travelTools : autoTools;
+
+const toolsHeading = categoryLower === 'travel'
+  ? 'Free Travel Calculators — Plan Your Trip Budget'
+  : 'Free Auto Calculators — Calculate, Compare & Save';
+
+const toolsDesc = categoryLower === 'travel'
+  ? 'Estimate your trip costs, compare transport options, and build a complete travel budget with these free tools.'
+  : 'Calculate fuel costs, compare petrol vs EV running costs, find the best car loan EMI, and estimate highway tolls.';
+
 const { data: relatedPosts } = await supabase
   .from('posts')
   .select('slug, title, hero_image, description, categories(name)')
@@ -259,6 +286,29 @@ const related = (relatedPosts ?? []).filter((p) => {
               </a>
             );
           })}
+        </div>
+      </aside>
+    )}
+
+    {showTools && (
+      <aside class="article-tools" aria-labelledby="article-tools-heading">
+        <div class="article-tools-top">
+          <div>
+            <p class="related-eyebrow">Free Online Tools</p>
+            <h2 id="article-tools-heading">{toolsHeading}</h2>
+            <p class="article-tools-desc">{toolsDesc}</p>
+          </div>
+          <a href="/tools" class="article-tools-all">All calculators →</a>
+        </div>
+        <div class="article-tools-grid">
+          {pageTools.map(tool => (
+            <a href={tool.href} class="article-tool-card">
+              <span class="article-tool-icon">{tool.icon}</span>
+              <strong class="article-tool-name">{tool.name}</strong>
+              <p class="article-tool-desc">{tool.desc}</p>
+              <span class="article-tool-cta">Use free tool →</span>
+            </a>
+          ))}
         </div>
       </aside>
     )}
@@ -564,6 +614,114 @@ const related = (relatedPosts ?? []).filter((p) => {
     .related-grid {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* ── Article tools promo ── */
+  .article-tools {
+    margin-top: 3rem;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(circle at top right, rgba(182,91,46,0.08), transparent 18rem),
+      linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,252,246,0.96));
+    box-shadow: var(--shadow-tight);
+  }
+
+  .article-tools-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .article-tools-top h2 {
+    font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+    margin: 0 0 0.4rem;
+  }
+
+  .article-tools-desc {
+    color: var(--muted);
+    font-size: 0.91rem;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  .article-tools-all {
+    flex-shrink: 0;
+    align-self: flex-start;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 180ms ease;
+    padding-bottom: 1px;
+    white-space: nowrap;
+    margin-top: 0.2rem;
+  }
+
+  .article-tools-all:hover { border-color: var(--accent-strong); }
+
+  .article-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .article-tool-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+    padding: 0.95rem 1.05rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .article-tool-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-tight);
+    color: var(--ink);
+  }
+
+  .article-tool-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    margin-bottom: 0.05rem;
+  }
+
+  .article-tool-name {
+    font-size: 0.91rem;
+    color: var(--ink-strong);
+    line-height: 1.3;
+  }
+
+  .article-tool-desc {
+    font-size: 0.81rem;
+    color: var(--muted);
+    line-height: 1.45;
+    margin: 0;
+    flex: 1;
+  }
+
+  .article-tool-cta {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 0.15rem;
+  }
+
+  @media (max-width: 600px) {
+    .article-tools-grid { grid-template-columns: 1fr; }
+    .article-tools-top { flex-direction: column; }
   }
 	</style>
 
