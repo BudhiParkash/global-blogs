@@ -11,7 +11,7 @@ export async function GET(context) {
   // 1. Fetch posts along with the category name
   const { data: posts } = await supabase
     .from('posts')
-    .select('*, categories(name)')
+    .select('slug, title, description, hero_image, published_at, categories(name)')
     .eq('is_published', true)
     .order('published_at', { ascending: false });
 
@@ -21,23 +21,36 @@ export async function GET(context) {
     site: context.site,
 
     trailingSlash: false,
-    
-    items: (posts || []).map((post) => {
-      // 2. Extract the category slug (handle array or single object)
-      const categoryData = Array.isArray(post.categories) ? post.categories : post.categories;
-      const categorySlug = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
 
-      // 3. Build the path string and strictly strip any trailing slashes
+    customData: `<language>en-us</language>`,
+
+    xmlns: {
+      media: 'http://search.yahoo.com/mrss/',
+    },
+
+    items: (posts || []).map((post) => {
+      const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+      const categorySlug = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
       const cleanPath = `/${categorySlug}/${post.slug}`.replace(/\/$/, "");
+
+      const imageUrl = post.hero_image || null;
+      let enclosure = '';
+      if (imageUrl) {
+        const ext = imageUrl.split('?')[0].split('.').pop()?.toLowerCase();
+        const mime = ext === 'png' ? 'image/png'
+          : ext === 'webp' ? 'image/webp'
+          : ext === 'gif' ? 'image/gif'
+          : 'image/jpeg';
+        enclosure = `<enclosure url="${imageUrl}" type="${mime}" length="0"/><media:content url="${imageUrl}" medium="image" type="${mime}"/>`;
+      }
 
       return {
         title: post.title,
         pubDate: new Date(post.published_at),
-        description: post.excerpt || post.description, 
-        // 4. Pass the clean, non-trailing slash path
+        description: post.excerpt || post.description,
         link: cleanPath,
-        // 5. Add category to the RSS item metadata
         categories: [categoryData?.name || 'General'],
+        customData: enclosure,
       };
     }),
   });
