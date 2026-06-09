@@ -157,9 +157,10 @@ const formatDate = (iso?: string) =>
             src={featuredPost.hero_image}
             alt={featuredPost.title}
             width="800"
-            height="500"
+            height="450"
             loading="eager"
             fetchpriority="high"
+            decoding="async"
           />
         )}
       </a>
@@ -276,8 +277,9 @@ const formatDate = (iso?: string) =>
                       src={post.hero_image}
                       alt={post.title}
                       width="600"
-                      height="375"
+                      height="338"
                       loading="lazy"
+                      decoding="async"
                     />
                   )}
                   <div class="cat-card-body">

@@ -87,7 +87,9 @@ const socialLinks = [
 		<div>
 			<h3>Contact</h3>
 			<ul class="footer-notes">
-				<li><a href="mailto:contact@globalsblog.com">contact@globalsblog.com</a></li>
+				<li>
+					<span class="email-reveal" data-e="contact" data-d="globalsblog.com">contact [at] globalsblog.com</span>
+				</li>
 				<li>The Edge Tower, Ramprastha City, Sector 37D, Gurugram, Haryana, India</li>
 				<li>Editorial and business inquiries welcome</li>
 			</ul>
@@ -229,6 +231,11 @@ const socialLinks = [
 		font-size: 0.95rem;
 	}
 
+	.email-reveal {
+		cursor: pointer;
+		color: inherit;
+	}
+
 	@media (max-width: 860px) {
 		.footer-shell {
 			grid-template-columns: 1fr;
@@ -236,3 +243,15 @@ const socialLinks = [
 		}
 	}
 </style>
+
+<script is:inline>
+  document.querySelectorAll('.email-reveal').forEach(function (el) {
+    var email = el.dataset.e + '@' + el.dataset.d;
+    var a = document.createElement('a');
+    a.href = 'mailto:' + email;
+    a.textContent = email;
+    a.style.color = 'inherit';
+    a.style.textDecoration = 'none';
+    el.parentNode.replaceChild(a, el);
+  });
+</script>
