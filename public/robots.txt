@@ -1,15 +1,90 @@
 # GlobalsBlog — robots.txt
 
-# Allow the AdSense content crawler to read every page
-# so Google can match relevant ads to your content.
+# ── Google ──────────────────────────────────────────────
+# AdSense content crawler
 User-agent: Mediapartners-Google
 Allow: /
 
-# Allow all other crawlers
+# Google AI (Gemini, AI Overviews, SGE)
+User-agent: Google-Extended
+Allow: /
+
+# Google misc crawler
+User-agent: GoogleOther
+Allow: /
+
+# ── OpenAI ──────────────────────────────────────────────
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# ── Anthropic / Claude ──────────────────────────────────
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# ── Perplexity ──────────────────────────────────────────
+User-agent: PerplexityBot
+Allow: /
+
+# ── Apple Intelligence ──────────────────────────────────
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# ── Meta / Facebook ─────────────────────────────────────
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# ── Microsoft / Bing / Copilot ──────────────────────────
+User-agent: Bingbot
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+# ── Other AI & LLM crawlers ─────────────────────────────
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Timpibot
+Allow: /
+
+User-agent: PetalBot
+Allow: /
+
+# ── All other crawlers ──────────────────────────────────
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /search
 
-# Sitemap
+# ── Discovery ───────────────────────────────────────────
 Sitemap: https://globalsblog.com/sitemap-index.xml
+LLMs-txt: https://globalsblog.com/llms.txt

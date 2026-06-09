@@ -171,7 +171,17 @@ const schemaGraph: JsonLdNode[] = [
         '/contact-us',
         Astro.site || Astro.url
       ).toString()
-    }
+    },
+
+    sameAs: [
+      'https://x.com/globalsblog_com',
+      'https://www.instagram.com/globals_blog',
+      'https://www.linkedin.com/company/globals-blog',
+      'https://www.facebook.com/people/Globals-Blog/61590625202053',
+      'https://www.pinterest.com/globals_blog',
+      'https://youtube.com/@globalsblog',
+      'https://medium.com/@globalsblog'
+    ]
   },
 
   // Website
@@ -282,7 +292,7 @@ if (isArticle) {
         '@type': 'ImageObject',
         url: socialImageUrl,
         width: 1200,
-        height: 630
+        height: 675
       }
     ],
 
@@ -290,6 +300,13 @@ if (isArticle) {
     dateModified: articleModified || articleDate,
 
     articleSection: category,
+
+    keywords: category ? [category, 'India', 'GlobalsBlog'] : undefined,
+
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['.quick-answer', 'h2', '.article-header h1']
+    },
 
     inLanguage: 'en',
 
@@ -368,6 +385,14 @@ const schema = {
   type="application/rss+xml"
   title={SITE_TITLE}
   href={new URL('rss.xml', Astro.site)}
+/>
+
+<!-- LLMs.txt — AI/LLM content discovery -->
+<link
+  rel="alternate"
+  type="text/plain"
+  title="LLMs.txt"
+  href={new URL('llms.txt', Astro.site)}
 />
 
 <!-- Generator -->
