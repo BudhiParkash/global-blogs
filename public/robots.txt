@@ -88,3 +88,4 @@ Disallow: /api/
 # ── Discovery ───────────────────────────────────────────
 Sitemap: https://globalsblog.com/sitemap-index.xml
 LLMs-txt: https://globalsblog.com/llms.txt
+LLMs-full-txt: https://globalsblog.com/llms-full.txt
