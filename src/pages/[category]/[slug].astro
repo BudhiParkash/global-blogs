@@ -51,10 +51,14 @@ const { data: post } = await supabase
     *,
     author:author_id (
       name,
-      bio,
-      avatar_url,
-      twitter_handle,
-      handle_link
+  bio,
+  bio_travel,
+  bio_auto,
+  bio_beauty,
+  bio_news,
+  avatar_url,
+  twitter_handle,
+  handle_link
     ),
     categories(name)
   `)
@@ -246,7 +250,15 @@ const related = (relatedPosts ?? []).filter((p) => {
                 post.author.name
               )}
             </h3>
-            <p>{post.author.bio}</p>
+            <p>
+  {
+    categoryLower === 'travel' ? post.author.bio_travel :
+    categoryLower === 'auto' ? post.author.bio_auto :
+    categoryLower === 'beauty' ? post.author.bio_beauty :
+    categoryLower === 'news' ? post.author.bio_news :
+    post.author.bio
+  }
+</p>
             {authorProfileUrl && (
               <a href={authorProfileUrl} class="author-link">View author profile</a>
             )}
