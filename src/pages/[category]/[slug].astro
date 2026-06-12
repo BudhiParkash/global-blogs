@@ -55,7 +55,6 @@ const { data: post } = await supabase
   bio_travel,
   bio_auto,
   bio_beauty,
-  bio_news,
   avatar_url,
   twitter_handle,
   handle_link
@@ -255,7 +254,6 @@ const related = (relatedPosts ?? []).filter((p) => {
     categoryLower === 'travel' ? post.author.bio_travel :
     categoryLower === 'auto' ? post.author.bio_auto :
     categoryLower === 'beauty' ? post.author.bio_beauty :
-    categoryLower === 'news' ? post.author.bio_news :
     post.author.bio
   }
 </p>

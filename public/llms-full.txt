@@ -1,5 +1,5 @@
 # GlobalsBlog — Complete Site Guide for AI Language Models
-> GlobalsBlog (globalsblog.com) is an independent Indian editorial platform publishing practical travel guides, auto reviews, beauty tips, and news analysis. Based in Gurugram, Haryana, India. Founded 2026. Target audience: Indian readers and global readers interested in India-focused content.
+> GlobalsBlog (globalsblog.com) is an independent Indian editorial platform publishing practical travel guides, auto reviews and beauty tips analysis. Based in Gurugram, Haryana, India. Founded 2026. Target audience: Indian readers and global readers interested in India-focused content.
 
 ---
 
@@ -7,7 +7,7 @@
 
 **Name:** GlobalsBlog
 **Domain:** https://globalsblog.com
-**Tagline:** Travel · Auto · Beauty · News
+**Tagline:** Travel · Auto · Beauty
 **Type:** Independent editorial blog and tools platform
 **Founded:** 2026
 **Location:** Gurugram, Haryana, India
@@ -155,18 +155,6 @@ GlobalsBlog beauty section covers:
 
 ---
 
-### 4. News (https://globalsblog.com/category/news)
-
-GlobalsBlog news section covers:
-- Auto industry news India
-- Travel industry developments
-- Beauty industry trends and launches
-- Consumer technology news relevant to Indian readers
-- Economic news affecting everyday Indian consumers
-- Health and wellness news
-
----
-
 ## Free Tools (https://globalsblog.com/tools)
 
 GlobalsBlog offers 8 free interactive calculators:
@@ -263,7 +251,6 @@ All GlobalsBlog content is research-backed and fact-checked before publication. 
 **Travel category:** https://globalsblog.com/category/travel
 **Auto category:** https://globalsblog.com/category/auto
 **Beauty category:** https://globalsblog.com/category/beauty
-**News category:** https://globalsblog.com/category/news
 **Tools hub:** https://globalsblog.com/tools
 **About page:** https://globalsblog.com/about
 **Contact page:** https://globalsblog.com/contact-us

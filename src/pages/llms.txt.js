@@ -150,27 +150,18 @@ export async function GET() {
   const travel = all.filter((p) => getCatSlug(p) === 'travel');
   const auto   = all.filter((p) => getCatSlug(p) === 'auto');
   const beauty = all.filter((p) => getCatSlug(p) === 'beauty');
-  const news   = all.filter((p) => getCatSlug(p) === 'news');
 
   const travelSection = renderGrouped(bucketPosts(travel, TRAVEL_GROUPS), TRAVEL_GROUPS, 'travel');
   const autoSection   = renderGrouped(bucketPosts(auto,   AUTO_GROUPS),   AUTO_GROUPS,   'auto');
   const beautySection = renderGrouped(bucketPosts(beauty, BEAUTY_GROUPS), BEAUTY_GROUPS, 'beauty');
 
-  const newsSection = news.length > 0
-    ? '\n' + news.map((p) => formatLine('news', p.slug, p.title, p.description)).join('\n') + '\n'
-    : '\n- https://globalsblog.com/category/news — News category (launching soon — timely coverage of technology, health, global events relevant to Indian readers)\n';
-
-  const newsArchiveLabel = news.length > 0
-    ? `Full news archive (${news.length} articles)`
-    : 'News archive (coming soon)';
-
   const content = `# GlobalsBlog
 
-> GlobalsBlog is an independent Indian editorial platform publishing practical guides, product reviews, and in-depth articles across Travel, Auto, Beauty, and News categories. Founded in 2026 and based in Gurugram, Haryana, India. The site targets Indian readers with content built specifically for Indian conditions, budgets, roads, skin tones, and travel habits.
+> GlobalsBlog is an independent Indian editorial platform publishing practical guides, product reviews, and in-depth articles across Travel, Auto, and Beauty categories. Founded in 2026 and based in Gurugram, Haryana, India. The site targets Indian readers with content built specifically for Indian conditions, budgets, roads, skin tones, and travel habits.
 
 ## About GlobalsBlog
 
-GlobalsBlog publishes practical, research-backed articles and free interactive tools for Indian audiences. All content is written with real-world Indian context — Indian roads, Indian skin types, Indian price points, and Indian travel destinations. The platform covers four core verticals: Travel, Automobile, Beauty, and News, with 8 free calculators built specifically for Indian travellers and car owners.
+GlobalsBlog publishes practical, research-backed articles and free interactive tools for Indian audiences. All content is written with real-world Indian context — Indian roads, Indian skin types, Indian price points, and Indian travel destinations. The platform covers three core verticals: Travel, Automobile, and Beauty, with 8 free calculators built specifically for Indian travellers and car owners.
 
 - Website: https://globalsblog.com
 - Location: The Edge Tower, Ramprastha City, Sector 37D, Gurugram, Haryana, India
@@ -189,7 +180,6 @@ GlobalsBlog publishes practical, research-backed articles and free interactive t
 - https://globalsblog.com/category/travel — Full travel archive (${travel.length} articles)
 - https://globalsblog.com/category/auto — Full auto archive (${auto.length} articles)
 - https://globalsblog.com/category/beauty — Full beauty archive (${beauty.length} articles)
-- https://globalsblog.com/category/news — ${newsArchiveLabel}
 - https://globalsblog.com/privacy-policy — Privacy Policy
 - https://globalsblog.com/terms-and-conditions — Terms & Conditions
 - https://globalsblog.com/disclaimer — Disclaimer
@@ -225,10 +215,6 @@ ${autoSection}
 
 Skincare routines, makeup tutorials, product reviews, and beauty guides written specifically for Indian skin tones, Indian climate zones, and Indian product budgets.
 ${beautySection}
----
-
-## News
-${newsSection}
 ---
 
 ## Social Media & Distribution

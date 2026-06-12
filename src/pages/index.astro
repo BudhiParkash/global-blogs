@@ -29,12 +29,10 @@ const [
   { data: travelPosts },
   { data: autoPosts },
   { data: beautyPosts },
-  { data: newsPosts },
 ] = await Promise.all([
   fetchCategory('travel'),
   fetchCategory('auto'),
   fetchCategory('beauty'),
-  fetchCategory('news'),
 ]);
 
 // Category section metadata with keyword-rich headings
@@ -65,15 +63,6 @@ const categorySections = [
     description:
       'Easy makeup tutorials, skincare routines for every skin type, ingredient guides for niacinamide, retinol, and vitamin C, and the latest beauty trends.',
     posts: beautyPosts ?? [],
-  },
-  {
-    slug: 'news',
-    label: 'News',
-    id: 'news',
-    heading: 'Latest News, Trending Topics & Current Events',
-    description:
-      'Timely coverage of trending topics, technology news, health and wellness updates, and global stories that matter.',
-    posts: newsPosts ?? [],
   },
 ];
 
@@ -107,17 +96,17 @@ const itemListItems = [
 ---
 
 <Layout
-  title="GlobalsBlog | Travel, Auto, Beauty & News Articles"
-  description="Discover travel, auto, beauty, and news articles on GlobalsBlog. Browse fresh stories, practical tips, and category-focused updates in one place."
-  keywords="travel blog India, auto news India, beauty tips India, news articles India, visa free countries Indian passport, best places visit India 2026, best electric car India 2026, cheapest EV India, best sunscreen India, sunscreen oily skin India, fuel cost calculator India, car loan EMI calculator India, EV savings calculator India, toll calculator India, road trip planner India, trip cost calculator India, train vs flight India, travel budget planner India, India travel guide, Indian passport visa on arrival, monsoon travel India, budget travel India, solo travel India, SUV India 2026, best mileage car India, petrol vs electric car India, Tata Sierra EV 2026, India skincare market, India auto sales 2026, India domestic tourism 2026, skincare routine Indian skin, kajal eyeliner guide India, niacinamide India, retinol India, eye makeup guide India, free online calculators India, travel calculators India, auto calculators India, FASTag toll charges, car buying guide India 2026"
+  title="GlobalsBlog | Travel, Auto & Beauty Articles"
+  description="Discover travel, auto, and beauty articles on GlobalsBlog. Browse fresh stories, practical tips, and category-focused updates in one place."
+  keywords="travel blog India, auto news India, beauty tips India, visa free countries Indian passport, best places visit India 2026, best electric car India 2026, cheapest EV India, best sunscreen India, sunscreen oily skin India, fuel cost calculator India, car loan EMI calculator India, EV savings calculator India, toll calculator India, road trip planner India, trip cost calculator India, train vs flight India, travel budget planner India, India travel guide, Indian passport visa on arrival, monsoon travel India, budget travel India, solo travel India, SUV India 2026, best mileage car India, petrol vs electric car India, skincare routine Indian skin, kajal eyeliner guide India, niacinamide India, retinol India, eye makeup guide India, free online calculators India, travel calculators India, auto calculators India, FASTag toll charges, car buying guide India 2026"
   image={featuredPost?.hero_image}
   itemListItems={itemListItems}
 >
   <!-- HERO -->
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">Travel · Auto · Beauty · News · Free Tools</p>
-      <h1>Articles, guides &amp; free calculators for travel, auto, beauty, and news.</h1>
+      <p class="eyebrow">Travel · Auto · Beauty · Free Tools</p>
+      <h1>Articles, guides &amp; free calculators for travel, auto, and beauty.</h1>
       <p class="hero-text">
         GlobalsBlog publishes practical articles and free interactive tools — fuel cost calculators,
         car loan EMI, trip budget planners, and more — all in one well-organised place.
@@ -139,7 +128,7 @@ const itemListItems = [
         <a href="/tools" aria-label="Free online calculators">🧰 Tools</a>
       </div>
       <p class="panel-copy">
-        Practical articles across four categories, plus free calculators built for Indian travellers and car owners.
+        Practical articles across three categories, plus free calculators built for Indian travellers and car owners.
       </p>
     </div>
   </section>
