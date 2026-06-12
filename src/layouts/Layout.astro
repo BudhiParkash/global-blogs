@@ -9,6 +9,7 @@ interface Props {
     title: string;
     description?: string;
     image?: string;
+    keywords?: string;
 
     articleDate?: string;
     articleModified?: string;
@@ -19,12 +20,14 @@ interface Props {
     category?: string;
     isArticle?: boolean;
     isAuthorProfile?: boolean;
+    itemListItems?: { url: string; name?: string }[];
 }
 
 const {
     title,
     description = 'GlobalsBlog for travel, auto, beauty, and lifestyle stories.',
     image,
+    keywords,
     articleDate,
     articleModified,
     authorName,
@@ -33,7 +36,8 @@ const {
     authorAvatar,
     category,
     isArticle = false,
-    isAuthorProfile = false
+    isAuthorProfile = false,
+    itemListItems
 } = Astro.props;
 ---
 
@@ -55,7 +59,7 @@ const {
         <meta name="robots" content="index, follow, max-image-preview:large" />
         
         <!-- FIX: Pass the 'image' prop here so BaseHead can use it for OG/Twitter -->
-        <BaseHead title={title} description={description} image={image} articleDate={articleDate}
+        <BaseHead title={title} description={description} image={image} keywords={keywords} articleDate={articleDate}
             articleModified={articleModified}
             authorName={authorName}
             authorUrl={authorUrl}
@@ -64,6 +68,7 @@ const {
             category={category}
             isArticle={isArticle}
             isAuthorProfile={isAuthorProfile}
+            itemListItems={itemListItems}
             />
     </head>
     <body>

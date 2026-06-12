@@ -11,6 +11,7 @@
   aria-modal="false"
   aria-label="Cookie consent"
   hidden
+  aria-hidden="true"
 >
   <div class="cookie-inner">
     <div class="cookie-text">
@@ -41,17 +42,22 @@
   // Show only if no stored choice
   if (!localStorage.getItem(CONSENT_KEY)) {
     // Small delay so the page paints first
-    setTimeout(() => banner?.removeAttribute('hidden'), 600);
+    setTimeout(() => {
+      banner?.removeAttribute('hidden');
+      banner?.setAttribute('aria-hidden', 'false');
+    }, 600);
   }
 
   document.getElementById('cookie-accept')?.addEventListener('click', () => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
     banner?.setAttribute('hidden', '');
+    banner?.setAttribute('aria-hidden', 'true');
   });
 
   document.getElementById('cookie-decline')?.addEventListener('click', () => {
     localStorage.setItem(CONSENT_KEY, 'declined');
     banner?.setAttribute('hidden', '');
+    banner?.setAttribute('aria-hidden', 'true');
   });
 </script>
 

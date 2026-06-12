@@ -6,6 +6,7 @@ interface Props {
   title: string;
   description: string;
   image?: string;
+  keywords?: string;
 
   articleDate?: string;
   articleModified?: string;
@@ -16,12 +17,14 @@ interface Props {
   category?: string;
   isArticle?: boolean;
   isAuthorProfile?: boolean;
+  itemListItems?: { url: string; name?: string }[];
 }
 
 const {
   title,
   description,
   image,
+  keywords,
   articleDate,
   articleModified,
   authorName,
@@ -30,7 +33,8 @@ const {
   authorAvatar,
   category,
   isArticle = false,
-  isAuthorProfile = false
+  isAuthorProfile = false,
+  itemListItems
 } = Astro.props;
 
 // URLs
@@ -333,6 +337,20 @@ if (isArticle) {
   });
 }
 
+// ItemList (e.g. homepage/category "latest articles" cards)
+if (itemListItems && itemListItems.length > 0) {
+  schemaGraph.push({
+    '@type': 'ItemList',
+    name: title,
+    itemListElement: itemListItems.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: new URL(item.url, Astro.site || Astro.url).toString(),
+      name: item.name || undefined
+    }))
+  });
+}
+
 // Final Schema
 const schema = {
   '@context': 'https://schema.org',
@@ -407,12 +425,28 @@ const schema = {
   href={canonicalURL}
 />
 
+<!-- Sitemap -->
+<link
+  rel="sitemap"
+  type="application/xml"
+  href="/sitemap-index.xml"
+/>
+
 <!-- Primary SEO -->
 <title>{title}</title>
 
 <meta
   name="description"
   content={description}
+/>
+
+{keywords && (
+  <meta name="keywords" content={keywords} />
+)}
+
+<meta
+  name="author"
+  content={authorName || SITE_TITLE}
 />
 
 <!-- Open Graph -->
@@ -444,6 +478,11 @@ const schema = {
 <meta
   property="og:image"
   content={socialImageUrl}
+/>
+
+<meta
+  property="og:image:alt"
+  content={title}
 />
 
 <meta
@@ -484,6 +523,11 @@ const schema = {
 />
 
 <meta
+  name="twitter:site"
+  content="@globalsblog_com"
+/>
+
+<meta
   name="twitter:url"
   content={pageUrl}
 />
@@ -506,6 +550,7 @@ const schema = {
 <!-- JSON-LD Schema -->
 <script
   type="application/ld+json"
+  is:inline
   set:html={JSON.stringify(schema)}
 />
 
