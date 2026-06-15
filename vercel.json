@@ -14,6 +14,11 @@
       "source": "/is-2026-the-year-evs-become-cheaper-than-petrol",
       "destination": "/auto/is-2026-the-year-evs-become-cheaper-than-petrol",
       "permanent": true
+    },
+     {
+      "source": "/news/tata-sierra-ev-launch-2026",
+      "destination": "/auto/tata-sierra-ev-launch-2026",
+      "permanent": true
     }
   ]
 }
