@@ -15,9 +15,39 @@
       "destination": "/auto/is-2026-the-year-evs-become-cheaper-than-petrol",
       "permanent": true
     },
-     {
+    {
       "source": "/news/tata-sierra-ev-launch-2026",
       "destination": "/auto/tata-sierra-ev-launch-2026",
+      "permanent": true
+    },
+    {
+      "source": "/beauty/best-eye-liner-india",
+      "destination": "/beauty/best-eye-liner",
+      "permanent": true
+    },
+    {
+      "source": "/auto/best-family-car-in-india",
+      "destination": "/auto/best-family-cars-india",
+      "permanent": true
+    },
+    {
+      "source": "/auto/government-subsidy-ev-charging-station-india-2026",
+      "destination": "/auto/government-subsidy-ev-charging-stations-india-2026",
+      "permanent": true
+    },
+    {
+      "source": "/auto/best-car-under-10-lakhs-in-india",
+      "destination": "/auto/best-suvs-under-10-lakh",
+      "permanent": true
+    },
+    {
+      "source": "/auto/best-mileage-car-in-india",
+      "destination": "/auto/best-mileage-suvs-india",
+      "permanent": true
+    },
+    {
+      "source": "/auto/best-car-in-india",
+      "destination": "/category/auto",
       "permanent": true
     }
   ]

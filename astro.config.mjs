@@ -18,6 +18,20 @@ const site =
 export default defineConfig({
   site,
   trailingSlash: 'never',
+
+  // Fix 3: 301 redirects for broken internal links flagged in Search Console.
+  // Mirrored in vercel.json (true HTTP 301s); these also generate fallback
+  // redirect pages so the URLs resolve on plain static hosting (GoDaddy).
+  redirects: {
+    '/beauty/best-eye-liner-india': '/beauty/best-eye-liner',
+    '/auto/best-family-car-in-india': '/auto/best-family-cars-india',
+    '/auto/government-subsidy-ev-charging-station-india-2026':
+      '/auto/government-subsidy-ev-charging-stations-india-2026',
+    '/auto/best-car-under-10-lakhs-in-india': '/auto/best-suvs-under-10-lakh',
+    '/auto/best-mileage-car-in-india': '/auto/best-mileage-suvs-india',
+    '/auto/best-car-in-india': '/category/auto',
+  },
+
   integrations: [
     react(),
     mdx(),

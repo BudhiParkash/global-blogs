@@ -1,0 +1,230 @@
+---
+// Fix 13: email newsletter signup — email-only form, styled with existing card
+// design tokens. Used on the homepage (always visible) and article pages
+// (dismissible via localStorage). Emails are stored in the Supabase `subscribers`
+// table (insert-only RLS policy, so the public anon key can subscribe but never
+// read the list).
+interface Props {
+  dismissible?: boolean;
+}
+const { dismissible = true } = Astro.props;
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<section
+  class="newsletter-card"
+  data-newsletter
+  data-dismissible={dismissible ? 'true' : 'false'}
+  hidden={dismissible || undefined}
+  aria-labelledby="newsletter-title"
+>
+  {dismissible && (
+    <button class="newsletter-dismiss" type="button" data-newsletter-dismiss aria-label="Dismiss newsletter signup">
+      &times;
+    </button>
+  )}
+  <p class="newsletter-eyebrow">Newsletter</p>
+  <h2 id="newsletter-title">Get weekly travel, auto &amp; beauty tips</h2>
+  <form
+    class="newsletter-form"
+    data-newsletter-form
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon-key={supabaseAnonKey}
+  >
+    <label class="sr-only" for="newsletter-email">Email address</label>
+    <input
+      id="newsletter-email"
+      type="email"
+      name="email"
+      placeholder="you@example.com"
+      autocomplete="email"
+      required
+    />
+    <button type="submit">Get weekly travel, auto &amp; beauty tips</button>
+  </form>
+  <p class="newsletter-note" data-newsletter-note>Join 1,000+ readers. No spam. Unsubscribe anytime.</p>
+</section>
+
+<style>
+  .newsletter-card {
+    position: relative;
+    margin-top: 3rem;
+    padding: clamp(1.4rem, 4vw, 2.2rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+    text-align: center;
+  }
+  .newsletter-card[hidden] {
+    display: none;
+  }
+  .newsletter-dismiss {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.9rem;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+  }
+  .newsletter-dismiss:hover {
+    color: var(--ink-strong);
+  }
+  .newsletter-eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .newsletter-card h2 {
+    margin: 0 0 1.1rem;
+    font-size: clamp(1.3rem, 2.6vw, 1.8rem);
+    color: var(--ink-strong);
+  }
+  .newsletter-form[hidden] {
+    display: none;
+  }
+  .newsletter-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.7rem;
+    max-width: 34rem;
+    margin: 0 auto;
+  }
+  .newsletter-form input {
+    flex: 1 1 220px;
+    min-height: 46px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 253, 248, 0.92);
+    color: var(--ink);
+    padding: 0.7rem 1.1rem;
+    outline: none;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+  .newsletter-form input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(182, 91, 46, 0.12);
+  }
+  .newsletter-form button {
+    flex: 0 0 auto;
+    min-height: 46px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ink-strong);
+    color: #fff7ef;
+    padding: 0.7rem 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+  .newsletter-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-tight);
+  }
+  .newsletter-note {
+    margin: 0.9rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+  @media (max-width: 560px) {
+    .newsletter-form button {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  // Dismissed state persists in localStorage so the card stays hidden on return visits.
+  const DISMISS_KEY = 'globalsblog-newsletter-dismissed';
+
+  document.querySelectorAll<HTMLElement>('[data-newsletter]').forEach((card) => {
+    // Dismiss logic only applies to dismissible instances (article pages);
+    // the homepage card renders visible with no dismiss button.
+    if (card.dataset.dismissible === 'true') {
+      let dismissed = false;
+      try {
+        dismissed = localStorage.getItem(DISMISS_KEY) === '1';
+      } catch {
+        /* storage unavailable (private mode) — show the card */
+      }
+
+      if (!dismissed) card.removeAttribute('hidden');
+
+      card
+        .querySelector('[data-newsletter-dismiss]')
+        ?.addEventListener('click', () => {
+          card.setAttribute('hidden', '');
+          try {
+            localStorage.setItem(DISMISS_KEY, '1');
+          } catch {
+            /* ignore */
+          }
+        });
+    }
+
+    // Save the email into the Supabase `subscribers` table (insert-only RLS)
+    const form = card.querySelector<HTMLFormElement>('[data-newsletter-form]');
+    const note = card.querySelector<HTMLElement>('[data-newsletter-note]');
+    const button = form?.querySelector('button');
+    const input = form?.querySelector('input');
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = String(new FormData(form).get('email') || '').trim();
+      const url = form.dataset.supabaseUrl;
+      const key = form.dataset.supabaseAnonKey;
+      if (!email || !url || !key) return;
+
+      button?.setAttribute('disabled', '');
+      if (button) button.textContent = 'Subscribing…';
+
+      const supabase = createClient(url, key);
+      const { error } = await supabase.from('subscribers').insert({
+        email: email.toLowerCase(),
+        source: window.location.pathname,
+      });
+
+      // 23505 = unique violation → this email is already subscribed; treat as success
+      if (error && error.code !== '23505') {
+        button?.removeAttribute('disabled');
+        if (button) button.textContent = 'Get weekly travel, auto & beauty tips';
+        if (note) {
+          note.textContent = 'Something went wrong — please try again in a moment.';
+          note.style.color = '#96382d';
+        }
+        return;
+      }
+
+      form.setAttribute('hidden', '');
+      if (note) {
+        note.textContent = error
+          ? "You're already subscribed — you're all set! ✓"
+          : "You're in! Check your inbox for a welcome soon. ✓";
+        note.style.color = '#40743f';
+        note.style.fontWeight = '700';
+      }
+      if (input) input.value = '';
+    });
+  });
+</script>

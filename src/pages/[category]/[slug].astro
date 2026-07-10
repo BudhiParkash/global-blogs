@@ -1,6 +1,7 @@
 ---
 // src/pages/[category]/[slug].astro
 import Layout from '../../layouts/Layout.astro';
+import NewsletterSignup from '../../components/NewsletterSignup.astro';
 import { createClient } from '@supabase/supabase-js';
 import { Image } from 'astro:assets';
 import '../../styles/blog-content.css';   // ← add this import
@@ -108,7 +109,7 @@ const toolsDesc = categoryLower === 'travel'
 
 const { data: relatedPosts } = await supabase
   .from('posts')
-  .select('slug, title, hero_image, description, categories(name)')
+  .select('slug, title, hero_image, description, published_at, categories(name)')
   .eq('is_published', true)
   .neq('slug', slug)
   .limit(10);
@@ -117,6 +118,68 @@ const related = (relatedPosts ?? []).filter((p) => {
   const cat = Array.isArray(p.categories) ? p.categories[0] : p.categories;
   return cat?.name?.toLowerCase().replace(/\s+/g, '-') === categoryParam;
 }).slice(0, 10);
+
+// "Read next": the next-older article in the same category (falls back to the
+// most recent one) — a descriptive-anchor internal link shown right where the
+// reader finishes the article, before they can bounce.
+const currentPublishedMs = post.published_at ? Date.parse(post.published_at) : 0;
+const sortedRelated = related
+  .filter((p) => p.published_at)
+  .sort((a, b) => Date.parse(b.published_at!) - Date.parse(a.published_at!));
+const nextPost =
+  sortedRelated.find((p) => Date.parse(p.published_at!) < currentPublishedMs) ||
+  sortedRelated[0] ||
+  related[0] ||
+  null;
+
+// Fix 5: show a visible "Updated" line only when updated_at falls on a
+// different calendar day than published_at.
+const publishedDay = post.published_at ? new Date(post.published_at).toDateString() : null;
+const updatedDay = post.updated_at ? new Date(post.updated_at).toDateString() : null;
+const showUpdated = Boolean(publishedDay && updatedDay && publishedDay !== updatedDay);
+
+// Fix 6: canonical article URL used by the WhatsApp / X / copy-link buttons
+const articleUrl = new URL(
+  Astro.url.pathname.replace(/\/$/, ''),
+  Astro.site || Astro.url
+).toString();
+const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${post.title} — ${articleUrl}`)}`;
+const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(articleUrl)}`;
+
+// Fix 11: parse H2/H3 headings from the rendered content, inject anchor ids
+// (render-time transform only — the post.content stored in Supabase is untouched)
+// and build Table of Contents data. TOC renders only for 4+ H2 articles.
+interface TocItem {
+  level: number;
+  text: string;
+  id: string;
+}
+const tocItems: TocItem[] = [];
+const seenHeadingIds = new Set<string>();
+
+const contentWithAnchors = String(post.content || '').replace(
+  /<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi,
+  (match, level, attrs, inner) => {
+    const text = inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (!text) return match;
+
+    const existingId = attrs.match(/\bid\s*=\s*["']([^"']+)["']/i);
+    let id = existingId ? existingId[1] : slugify(text) || `section-${tocItems.length + 1}`;
+
+    let unique = id;
+    let n = 2;
+    while (seenHeadingIds.has(unique)) unique = `${id}-${n++}`;
+    seenHeadingIds.add(unique);
+
+    tocItems.push({ level: Number(level), text, id: unique });
+
+    return existingId && existingId[1] === unique
+      ? match
+      : `<h${level}${attrs.replace(/\bid\s*=\s*["'][^"']*["']/i, '')} id="${unique}">${inner}</h${level}>`;
+  }
+);
+
+const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
 ---
 
 <Layout
@@ -143,6 +206,14 @@ const related = (relatedPosts ?? []).filter((p) => {
           year: 'numeric', month: 'long', day: 'numeric',
         })}
       </p>
+      <!-- Fix 5: visible freshness signal matching the dateModified in schema -->
+      {showUpdated && (
+        <p class="article-meta article-updated">
+          Updated: {new Date(post.updated_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric',
+          })}
+        </p>
+      )}
     </header>
 
     {post.hero_image && (
@@ -159,16 +230,83 @@ const related = (relatedPosts ?? []).filter((p) => {
       />
     )}
 
+    <!-- Fix 11: Table of Contents — only for long articles (4+ H2 sections) -->
+    {showToc && (
+      <details class="toc" id="article-toc" open>
+        <summary>
+          <span class="toc-label">Table of Contents</span>
+          <span class="toc-chevron" aria-hidden="true">▾</span>
+        </summary>
+        <nav aria-label="Table of contents">
+          <ol class="toc-list">
+            {tocItems.map((item) => (
+              <li class={item.level === 3 ? 'toc-sub' : ''}>
+                <a href={`#${item.id}`}>{item.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </details>
+    )}
+
     <!--
       data-accent drives the CSS variable --acc in blog-content.css
       Value comes from the accent_color column in Supabase posts table
+      data-pagefind-body scopes Pagefind search indexing to article content (Fix 12)
+      contentWithAnchors = post.content with anchor ids injected on H2/H3 (Fix 11)
     -->
     <section
       class="article-body"
       data-accent={accentColor}
+      data-pagefind-body
     >
-      <Fragment set:html={post.content} />
+      <Fragment set:html={contentWithAnchors} />
     </section>
+
+    <!-- Read next: one prominent same-category internal link at the end of the
+         article — descriptive anchor text (the title) for SEO, catches readers
+         before they bounce -->
+    {nextPost && (
+      <a class="read-next" href={`/${categoryParam}/${nextPost.slug}`}>
+        <div class="read-next-text">
+          <span class="read-next-eyebrow">Read next</span>
+          <strong>{nextPost.title}</strong>
+          {nextPost.description && <p>{nextPost.description}</p>}
+        </div>
+        <span class="read-next-arrow" aria-hidden="true">→</span>
+      </a>
+    )}
+
+    <!-- Fix 6: lightweight share row — WhatsApp, X, and copy link, no widget libraries -->
+    <div class="share-row" aria-label="Share this article">
+      <span class="share-label">Share this article</span>
+      <div class="share-buttons">
+        <a
+          class="share-btn"
+          href={whatsappShareUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on WhatsApp"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.07-.15-.67-1.6-.92-2.2-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.5.7.3 1.26.48 1.7.62.7.22 1.35.19 1.86.11.57-.08 1.76-.72 2-1.41.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.58-.35z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.35A10 10 0 1 0 12 2zm0 18.3c-1.5 0-2.96-.4-4.24-1.15l-.3-.18-3.13.84.84-3.05-.2-.31A8.3 8.3 0 1 1 12 20.3z"/></svg>
+          WhatsApp
+        </a>
+        <a
+          class="share-btn"
+          href={twitterShareUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on X (Twitter)"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.4l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.6l5.24 6.93 6.06-6.93zm-1.3 19.5h2.04L6.5 3.24H4.3l13.3 17.4z"/></svg>
+          Share on X
+        </a>
+        <button class="share-btn" type="button" id="copy-link-btn" data-url={articleUrl} aria-label="Copy article link">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span data-copy-text>Copy link</span>
+        </button>
+      </div>
+    </div>
 
     <section class="comment-card" aria-labelledby="comment-title">
       <div class="comment-heading">
@@ -275,6 +413,9 @@ const related = (relatedPosts ?? []).filter((p) => {
       </footer>
     )}
 
+    <!-- Fix 13: newsletter signup at the bottom of every article, above related posts -->
+    <NewsletterSignup />
+
     {related.length > 0 && (
       <aside class="related-posts" aria-labelledby="related-title">
         <p class="related-eyebrow">More in {categoryName}</p>
@@ -350,6 +491,153 @@ const related = (relatedPosts ?? []).filter((p) => {
   }
   .article-header h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1; margin: 0; }
   .article-meta { margin: 1.5rem 0 0; color: var(--muted); font-size: 0.9rem; }
+  /* Fix 5: visible "Updated" line, same style as the published date */
+  .article-updated { margin-top: 0.35rem; font-weight: 700; }
+
+  /* Fix 11: Table of Contents */
+  .toc {
+    margin-bottom: 2rem;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+  }
+  .toc summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+    color: var(--ink-strong);
+    font-size: 1.02rem;
+  }
+  .toc summary::-webkit-details-marker { display: none; }
+  .toc-chevron { color: var(--muted); transition: transform 180ms ease; }
+  .toc[open] .toc-chevron { transform: rotate(180deg); }
+  .toc-list {
+    margin: 1rem 0 0.2rem;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+  .toc-list a {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.94rem;
+    line-height: 1.45;
+    border-bottom: 1px solid transparent;
+    transition: color 180ms ease, border-color 180ms ease;
+  }
+  .toc-list a:hover { color: var(--accent-strong); border-color: var(--accent-strong); }
+  .toc-sub { margin-left: 1.1rem; list-style-type: circle; }
+  .toc-sub a { font-size: 0.88rem; color: var(--muted); }
+
+  /* Read next card */
+  .read-next {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    margin-top: 2.5rem;
+    padding: 1.3rem 1.5rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+    text-decoration: none;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+  .read-next:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .read-next-eyebrow {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .read-next-text strong {
+    display: block;
+    font-size: 1.15rem;
+    line-height: 1.35;
+    color: var(--ink-strong);
+  }
+  .read-next-text p {
+    margin: 0.4rem 0 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .read-next-arrow {
+    flex: 0 0 auto;
+    font-size: 1.6rem;
+    color: var(--accent-strong);
+    transition: transform 180ms ease;
+  }
+  .read-next:hover .read-next-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Fix 6: share buttons */
+  .share-row {
+    margin-top: 2.5rem;
+    padding: 1.2rem 1.4rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-tight);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .share-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .share-buttons { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 40px;
+    padding: 0.45rem 1rem;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 253, 248, 0.92);
+    color: var(--ink-strong);
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+  .share-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-tight);
+    color: var(--ink-strong);
+  }
+  .share-btn.copied {
+    border-color: rgba(64, 116, 63, 0.55);
+    color: #40743f;
+  }
   .article-image {
     width: 100%;
     aspect-ratio: 16/9;
@@ -737,6 +1025,33 @@ const related = (relatedPosts ?? []).filter((p) => {
 
 <script>
   import { createClient } from '@supabase/supabase-js';
+
+  // Fix 11: TOC starts collapsed on mobile, open on desktop
+  const toc = document.getElementById('article-toc');
+  if (toc && window.matchMedia('(max-width: 768px)').matches) {
+    toc.removeAttribute('open');
+  }
+
+  // Fix 6: copy-link button with clipboard API + brief "Copied!" feedback
+  const copyBtn = document.getElementById('copy-link-btn');
+  copyBtn?.addEventListener('click', async () => {
+    const url = copyBtn.getAttribute('data-url') || window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      const label = copyBtn.querySelector('[data-copy-text]');
+      if (label) {
+        label.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          label.textContent = 'Copy link';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      }
+    } catch {
+      // Clipboard API unavailable — fall back to a prompt so the URL is still copyable
+      window.prompt('Copy this link:', url);
+    }
+  });
 
   const commentForm = document.getElementById('comment-form') as HTMLFormElement | null;
   const submittedMessage = document.getElementById('comment-submitted');

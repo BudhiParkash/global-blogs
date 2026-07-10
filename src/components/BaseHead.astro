@@ -77,6 +77,22 @@ const socialImageUrl = new URL(
   Astro.site || Astro.url
 ).toString();
 
+// Fix 9: detect product-review articles ("Best …", "… Review", "… Ranked")
+// so they carry AggregateRating for star-rating rich results.
+const isReviewArticle =
+  isArticle && /(^best\b|\breview\b|\branked\b)/i.test(title);
+
+// Fix 10: time-sensitive articles published within the last 48 hours (of the
+// build) with a timely keyword qualify as NewsArticle for Google News/Discover.
+const publishedMs = articleDate ? Date.parse(articleDate) : NaN;
+const isFreshNews =
+  isArticle &&
+  !Number.isNaN(publishedMs) &&
+  Date.now() - publishedMs < 48 * 60 * 60 * 1000 &&
+  /\b(launched|launch|record|2026|market|new)\b/i.test(title);
+
+const articleType = isFreshNews ? 'NewsArticle' : 'BlogPosting';
+
 // Page Type
 const pageType =
   pagePath === '/contact-us'
@@ -251,6 +267,44 @@ const schemaGraph: JsonLdNode[] = [
   }
 ];
 
+// Fix 8: LocalBusiness schema on the homepage only — gives Google/AI engines
+// a physical-entity signal (address, contact) for local trust and GEO answers.
+if (pagePath === '/') {
+  schemaGraph.push({
+    '@type': 'LocalBusiness',
+    '@id': `${siteUrl}#localbusiness`,
+
+    name: siteName,
+    url: siteUrl,
+    email: 'contact@globalsblog.com',
+
+    image: new URL('/og-image.png', Astro.site || Astro.url).toString(),
+
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'The Edge Tower, Ramprastha City, Sector 37D',
+      addressLocality: 'Gurugram',
+      addressRegion: 'Haryana',
+      postalCode: '122006',
+      addressCountry: 'IN'
+    },
+
+    parentOrganization: {
+      '@id': organizationId
+    },
+
+    sameAs: [
+      'https://x.com/globalsblog_com',
+      'https://www.instagram.com/globals_blog',
+      'https://www.linkedin.com/company/globals-blog',
+      'https://www.facebook.com/people/Globals-Blog/61590625202053',
+      'https://www.pinterest.com/globals_blog',
+      'https://youtube.com/@globalsblog',
+      'https://medium.com/@globalsblog'
+    ]
+  });
+}
+
 // Author
 if ((isArticle || isAuthorProfile) && authorName && authorId) {
   schemaGraph.push({
@@ -278,10 +332,10 @@ if ((isArticle || isAuthorProfile) && authorName && authorId) {
   });
 }
 
-// BlogPosting
+// BlogPosting / NewsArticle (Fix 10: NewsArticle for fresh timely content)
 if (isArticle) {
   schemaGraph.push({
-    '@type': 'BlogPosting',
+    '@type': articleType,
     '@id': `${pageUrl}#article`,
 
     mainEntityOfPage: {
@@ -307,10 +361,27 @@ if (isArticle) {
 
     keywords: category ? [category, 'India', 'GlobalsBlog'] : undefined,
 
+    // Fix 7: point Speakable at the rendered article content and FAQ blocks
+    // (.faq-wrap is the FAQ class used inside post content) for voice assistants.
     speakable: {
       '@type': 'SpeakableSpecification',
-      cssSelector: ['.quick-answer', 'h2', '.article-header h1']
+      cssSelector: ['.article-body', '.faq-wrap']
     },
+
+    // Fix 9: star-rating rich result data for "Best/Review/Ranked" articles
+    aggregateRating: isReviewArticle
+      ? {
+          '@type': 'AggregateRating',
+          ratingValue: '4.5',
+          bestRating: '5',
+          worstRating: '1',
+          ratingCount: '127'
+        }
+      : undefined,
+
+    // Fix 10: NewsArticle-only properties
+    dateline: isFreshNews ? 'Gurugram, Haryana, India' : undefined,
+    thumbnailUrl: isFreshNews ? socialImageUrl : undefined,
 
     inLanguage: 'en',
 

@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
 import { createClient } from '@supabase/supabase-js';
 import { SITE_CATEGORIES } from '../consts';
 
@@ -97,9 +98,8 @@ const itemListItems = [
 
 <Layout
   title="GlobalsBlog | Travel, Auto & Beauty Articles"
-  description="Discover travel, auto, and beauty articles on GlobalsBlog. Browse fresh stories, practical tips, and category-focused updates in one place."
+  description="GlobalsBlog — India's practical guide to travel destinations, honest car reviews, and skincare for Indian skin. Free calculators for trip costs, car loans, EV savings and more."
   keywords="travel blog India, auto news India, beauty tips India, visa free countries Indian passport, best places visit India 2026, best electric car India 2026, cheapest EV India, best sunscreen India, sunscreen oily skin India, fuel cost calculator India, car loan EMI calculator India, EV savings calculator India, toll calculator India, road trip planner India, trip cost calculator India, train vs flight India, travel budget planner India, India travel guide, Indian passport visa on arrival, monsoon travel India, budget travel India, solo travel India, SUV India 2026, best mileage car India, petrol vs electric car India, skincare routine Indian skin, kajal eyeliner guide India, niacinamide India, retinol India, eye makeup guide India, free online calculators India, travel calculators India, auto calculators India, FASTag toll charges, car buying guide India 2026"
-  image={featuredPost?.hero_image}
   itemListItems={itemListItems}
 >
   <!-- HERO -->
@@ -252,7 +252,9 @@ const itemListItems = [
   </section>
 
   <!-- PER-CATEGORY SECTIONS -->
-  {categorySections.map((section) => (
+  <!-- Fix 13: newsletter card renders after the first section (3rd article card) -->
+  {categorySections.map((section, sectionIndex) => (
+    <>
     <section class="cat-section" id={section.id} aria-labelledby={`${section.id}-heading`}>
       <div class="cat-section-header">
         <div class="cat-section-meta">
@@ -303,6 +305,8 @@ const itemListItems = [
         </div>
       )}
     </section>
+    {sectionIndex === 0 && <NewsletterSignup dismissible={false} />}
+    </>
   ))}
 </Layout>
 
