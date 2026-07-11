@@ -262,11 +262,23 @@ import HeaderLink from './HeaderLink.astro';
 				script.onerror = reject;
 				document.head.appendChild(script);
 			});
+			// Pagefind derives URLs from dist folders (/auto/slug/), but our
+			// canonical URLs have no trailing slash — strip it (also before
+			// #anchors in sub-results) so search links match the canonicals.
+			const stripSlash = (url: string) => url.replace(/\/+(#|\?|$)/, '$1') || '/';
+
 			// @ts-expect-error PagefindUI is attached to window by the script above
 			new window.PagefindUI({
 				element: '#pagefind-search',
 				showSubResults: true,
 				showImages: false,
+				processResult: (result: { url?: string; sub_results?: { url?: string }[] }) => {
+					if (result?.url) result.url = stripSlash(result.url);
+					result?.sub_results?.forEach((sub) => {
+						if (sub?.url) sub.url = stripSlash(sub.url);
+					});
+					return result;
+				},
 			});
 		} catch {
 			const mount = document.getElementById('pagefind-search');

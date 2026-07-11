@@ -77,11 +77,6 @@ const socialImageUrl = new URL(
   Astro.site || Astro.url
 ).toString();
 
-// Fix 9: detect product-review articles ("Best …", "… Review", "… Ranked")
-// so they carry AggregateRating for star-rating rich results.
-const isReviewArticle =
-  isArticle && /(^best\b|\breview\b|\branked\b)/i.test(title);
-
 // Fix 10: time-sensitive articles published within the last 48 hours (of the
 // build) with a timely keyword qualify as NewsArticle for Google News/Discover.
 const publishedMs = articleDate ? Date.parse(articleDate) : NaN;
@@ -368,16 +363,9 @@ if (isArticle) {
       cssSelector: ['.article-body', '.faq-wrap']
     },
 
-    // Fix 9: star-rating rich result data for "Best/Review/Ranked" articles
-    aggregateRating: isReviewArticle
-      ? {
-          '@type': 'AggregateRating',
-          ratingValue: '4.5',
-          bestRating: '5',
-          worstRating: '1',
-          ratingCount: '127'
-        }
-      : undefined,
+    // NOTE: aggregateRating was removed — Google rejects it on BlogPosting
+    // (only Product/Recipe/Course/etc. may carry ratings) and it caused an
+    // "invalid item" error in the Rich Results Test.
 
     // Fix 10: NewsArticle-only properties
     dateline: isFreshNews ? 'Gurugram, Haryana, India' : undefined,
