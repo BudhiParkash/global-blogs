@@ -293,6 +293,15 @@
 .article-body .nearby-dist  { font-size: 11px; font-weight: 800; color: var(--acc); margin-bottom: 5px; }
 .article-body .nearby-desc  { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
 
+/* Any table in article HTML (from DB content) scrolls within its own box
+   on narrow screens instead of stretching the whole page horizontally. */
+.article-body table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── COMPARISON TABLE ── */
 .article-body .compare-table {
   width: 100%;
@@ -300,7 +309,8 @@
   margin: 18px 0 22px;
   font-size: 13.5px;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 0 0 1.5px var(--border);
 }
 .article-body .compare-table thead tr { background: var(--ink); color: #fff; }

@@ -6,7 +6,7 @@
 ## Site Identity
 
 **Name:** GlobalsBlog
-**Domain:** https://globalsblog.com
+**Domain:** [globalsblog.com](https://globalsblog.com)
 **Tagline:** Travel · Auto · Beauty
 **Type:** Independent editorial blog and tools platform
 **Founded:** 2026
@@ -26,7 +26,7 @@ GlobalsBlog exists to make practical information accessible to everyday Indian r
 
 ## Content Categories and Topics
 
-### 1. Travel (https://globalsblog.com/category/travel)
+### 1. [Travel](https://globalsblog.com/category/travel)
 
 GlobalsBlog travel section covers:
 
@@ -57,19 +57,19 @@ GlobalsBlog travel section covers:
 - Currency and forex tips
 
 **Key travel articles published:**
-- Visa Free Countries for Indian Passport 2026 — Complete List
-- Best Places to Visit in August in India 2026
-- Best Places to Visit in July in India 2026
-- Ram Jhula Travel Guide — Complete Visitor Guide
-- Laxman Jhula Travel Guide — Complete Visitor Guide
-- Neer Garh Waterfall Travel Guide — Complete Trek Guide
-- Mumbai Monsoon Getaways 2026
-- 7 Best Budget Road Trips from Mumbai 2026
-- Mumbai to Goa by Train — Konkan Railway Guide 2026
+- [Visa Free Countries for Indian Passport 2026 — Complete List](https://globalsblog.com/travel/visa-free-countries-for-india)
+- [Best Places to Visit in August in India 2026](https://globalsblog.com/travel/best-places-to-visit-in-august-in-india)
+- [Best Places to Visit in July in India 2026](https://globalsblog.com/travel/best-places-to-visit-in-july-in-india)
+- [Ram Jhula Travel Guide — Complete Visitor Guide](https://globalsblog.com/travel/ram-jhula-travel-guide)
+- [Laxman Jhula Travel Guide — Complete Visitor Guide](https://globalsblog.com/travel/laxman-jhula-travel-guide)
+- [Neer Garh Waterfall Travel Guide — Complete Trek Guide](https://globalsblog.com/travel/neer-garh-waterfall-travel-guide)
+- [Mumbai Monsoon Getaways 2026](https://globalsblog.com/travel/mumbai-monsoon-weekend-getaways-2026)
+- [7 Best Budget Road Trips from Mumbai 2026](https://globalsblog.com/travel/best-budget-road-trips-from-mumbai-in-2026)
+- [Mumbai to Goa by Train — Konkan Railway Guide 2026](https://globalsblog.com/travel/mumbai-goa-konkan-train-travel-guide)
 
 ---
 
-### 2. Auto (https://globalsblog.com/category/auto)
+### 2. [Auto](https://globalsblog.com/category/auto)
 
 GlobalsBlog auto section covers:
 
@@ -100,20 +100,20 @@ GlobalsBlog auto section covers:
 - Electric vehicle charging infrastructure India
 
 **Key auto articles published:**
-- Best Electric Car in India 2026 — Top Picks Ranked
-- SUV vs Crossover — What is the Real Difference
-- Best Mileage SUVs in India 2026 — Real-World Rankings
-- Best Family Cars in India 2026
+- [Best Electric Car in India 2026 — Top Picks Ranked](https://globalsblog.com/auto/best-electric-car-in-india)
+- [SUV vs Crossover — What is the Real Difference](https://globalsblog.com/auto/suv-vs-crossover)
+- [Best Mileage SUVs in India 2026 — Real-World Rankings](https://globalsblog.com/auto/best-mileage-suvs-india)
+- [Best Family Cars in India 2026](https://globalsblog.com/auto/best-family-cars-india)
 
 **Free auto tools:**
-- Car Loan EMI Calculator: https://globalsblog.com/tools/car-loan-calculator
-- EV Savings Calculator: https://globalsblog.com/tools/ev-savings-calculator
-- Fuel Cost Calculator: https://globalsblog.com/tools/fuel-cost-calculator
-- Toll Calculator: https://globalsblog.com/tools/toll-calculator
+- [Car Loan EMI Calculator](https://globalsblog.com/tools/car-loan-calculator)
+- [EV Savings Calculator](https://globalsblog.com/tools/ev-savings-calculator)
+- [Fuel Cost Calculator](https://globalsblog.com/tools/fuel-cost-calculator)
+- [Toll Calculator](https://globalsblog.com/tools/toll-calculator)
 
 ---
 
-### 3. Beauty (https://globalsblog.com/category/beauty)
+### 3. [Beauty](https://globalsblog.com/category/beauty)
 
 GlobalsBlog beauty section covers:
 
@@ -146,12 +146,12 @@ GlobalsBlog beauty section covers:
 - Ayurvedic skincare modern guide
 
 **Key beauty articles published:**
-- Best Kajal in India 2026 — Top Picks for Dark Long-Lasting Colour
-- Best Eye Liner in India 2026 — Top Picks for Every Eye Shape
-- Eye Makeup Guide India 2026 — Complete Technique for Every Eye Shape
-- Best Face Serums for All Skin Types
-- Best Sunscreen in India 2026 — Top Picks for Every Skin Type
-- Best Sunscreen for Oily Skin in India 2026 — No Grease No White Cast
+- [Best Kajal in India 2026 — Top Picks for Dark Long-Lasting Colour](https://globalsblog.com/beauty/best-kajal-india)
+- [Best Eye Liner in India 2026 — Top Picks for Every Eye Shape](https://globalsblog.com/beauty/best-eye-liner)
+- [Eye Makeup Guide India 2026 — Complete Technique for Every Eye Shape](https://globalsblog.com/beauty/eye-makeup-guide)
+- [Best Face Serums for All Skin Types](https://globalsblog.com/beauty/best-face-serums-all-skin-types-2026)
+- [Best Sunscreen in India 2026 — Top Picks for Every Skin Type](https://globalsblog.com/beauty/best-sunscreen-in-india)
+- [Best Sunscreen for Oily Skin in India 2026 — No Grease No White Cast](https://globalsblog.com/beauty/best-sunscreen-for-oily-skin-in-india)
 
 ---
 
@@ -159,16 +159,14 @@ GlobalsBlog beauty section covers:
 
 GlobalsBlog offers 8 free interactive calculators:
 
-| Tool | URL | Purpose |
-|------|-----|---------|
-| Fuel Cost Calculator | /tools/fuel-cost-calculator | Calculate petrol/diesel cost for any road trip |
-| Car Loan EMI Calculator | /tools/car-loan-calculator | Monthly EMI, total interest, loan tenure |
-| EV Savings Calculator | /tools/ev-savings-calculator | Savings from switching petrol to electric |
-| Toll Calculator | /tools/toll-calculator | Highway toll estimates with FASTag comparison |
-| Trip Cost Calculator | /tools/trip-cost-calculator | Total holiday cost estimation |
-| Travel Budget Planner | /tools/travel-budget-planner | Category-by-category holiday budget builder |
-| Road Trip Planner | /tools/road-trip-planner | Full road trip cost with tolls and food |
-| Train vs Flight Calculator | /tools/train-vs-flight-calculator | Cost and time comparison for Indian routes |
+- [Fuel Cost Calculator](https://globalsblog.com/tools/fuel-cost-calculator): Calculate petrol/diesel cost for any road trip
+- [Car Loan EMI Calculator](https://globalsblog.com/tools/car-loan-calculator): Monthly EMI, total interest, loan tenure
+- [EV Savings Calculator](https://globalsblog.com/tools/ev-savings-calculator): Savings from switching petrol to electric
+- [Toll Calculator](https://globalsblog.com/tools/toll-calculator): Highway toll estimates with FASTag comparison
+- [Trip Cost Calculator](https://globalsblog.com/tools/trip-cost-calculator): Total holiday cost estimation
+- [Travel Budget Planner](https://globalsblog.com/tools/travel-budget-planner): Category-by-category holiday budget builder
+- [Road Trip Planner](https://globalsblog.com/tools/road-trip-planner): Full road trip cost with tolls and food
+- [Train vs Flight Calculator](https://globalsblog.com/tools/train-vs-flight-calculator): Cost and time comparison for Indian routes
 
 ---
 
@@ -177,8 +175,8 @@ GlobalsBlog offers 8 free interactive calculators:
 ### Pankaj Sharma
 **Role:** Travel and Auto Editor
 **Expertise:** Travel guides, car reviews, auto buying guides
-**LinkedIn:** https://www.linkedin.com/in/pankaj-sharma-8b7ba91b4/
-**Author page:** https://globalsblog.com/authors/pankaj-sharma
+**LinkedIn:** [pankaj-sharma](https://www.linkedin.com/in/pankaj-sharma-8b7ba91b4/)
+**Author page:** [globalsblog.com/authors/pankaj-sharma](https://globalsblog.com/authors/pankaj-sharma)
 
 ---
 
@@ -187,24 +185,22 @@ GlobalsBlog offers 8 free interactive calculators:
 **Framework:** Astro v6.2.2
 **Hosting:** GoDaddy
 **Database:** Supabase
-**Sitemap:** https://globalsblog.com/sitemap.xml
-**RSS Feed:** https://globalsblog.com/rss.xml
-**robots.txt:** https://globalsblog.com/robots.txt
+**Sitemap:** [sitemap.xml](https://globalsblog.com/sitemap.xml)
+**RSS Feed:** [rss.xml](https://globalsblog.com/rss.xml)
+**robots.txt:** [robots.txt](https://globalsblog.com/robots.txt)
 
 ---
 
 ## Social Media Presence
 
-| Platform | Handle | URL |
-|----------|--------|-----|
-| Instagram | @globals_blog | https://www.instagram.com/globals_blog |
-| Twitter/X | @globalsblog_com | https://x.com/globalsblog_com |
-| Facebook | Globals Blog | https://www.facebook.com/people/Globals-Blog/61590625202053 |
-| LinkedIn | GlobalsBlog | https://www.linkedin.com/company/globals-blog |
-| Pinterest | globals_blog | https://www.pinterest.com/globals_blog |
-| YouTube | @globalsblog | https://youtube.com/@globalsblog |
-| Medium | @globalsblog | https://medium.com/@globalsblog |
-| Tumblr | globalsblog-com | https://globalsblog-com.tumblr.com |
+- [Instagram](https://www.instagram.com/globals_blog) — @globals_blog
+- [Twitter/X](https://x.com/globalsblog_com) — @globalsblog_com
+- [Facebook](https://www.facebook.com/people/Globals-Blog/61590625202053) — Globals Blog
+- [LinkedIn](https://www.linkedin.com/company/globals-blog) — GlobalsBlog
+- [Pinterest](https://www.pinterest.com/globals_blog) — globals_blog
+- [YouTube](https://youtube.com/@globalsblog) — @globalsblog
+- [Medium](https://medium.com/@globalsblog) — @globalsblog
+- [Tumblr](https://globalsblog-com.tumblr.com) — globalsblog-com
 
 ---
 
@@ -247,24 +243,24 @@ All GlobalsBlog content is research-backed and fact-checked before publication. 
 
 ## Sitemap Summary
 
-**Homepage:** https://globalsblog.com
-**Travel category:** https://globalsblog.com/category/travel
-**Auto category:** https://globalsblog.com/category/auto
-**Beauty category:** https://globalsblog.com/category/beauty
-**Tools hub:** https://globalsblog.com/tools
-**About page:** https://globalsblog.com/about
-**Contact page:** https://globalsblog.com/contact-us
-**Privacy Policy:** https://globalsblog.com/privacy-policy
-**Terms and Conditions:** https://globalsblog.com/terms-and-conditions
-**Disclaimer:** https://globalsblog.com/disclaimer
+- [Homepage](https://globalsblog.com)
+- [Travel category](https://globalsblog.com/category/travel)
+- [Auto category](https://globalsblog.com/category/auto)
+- [Beauty category](https://globalsblog.com/category/beauty)
+- [Tools hub](https://globalsblog.com/tools)
+- [About page](https://globalsblog.com/about)
+- [Contact page](https://globalsblog.com/contact-us)
+- [Privacy Policy](https://globalsblog.com/privacy-policy)
+- [Terms and Conditions](https://globalsblog.com/terms-and-conditions)
+- [Disclaimer](https://globalsblog.com/disclaimer)
 
 ---
 
-*Last updated: June 2026*
+*Last updated: July 2026*
 *GlobalsBlog — globalsblog.com — contact@globalsblog.com*
 
 
 ## Latest Articles
-For the complete and up-to-date list of all 
+For the complete and up-to-date list of all
 GlobalsBlog articles, see the dynamic index:
-https://globalsblog.com/llms.txt
+[globalsblog.com/llms.txt](https://globalsblog.com/llms.txt)

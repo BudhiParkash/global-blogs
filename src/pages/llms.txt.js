@@ -10,8 +10,8 @@ function getCatSlug(post) {
 function formatLine(catSlug, slug, title, description) {
   const url = `${BASE}/${catSlug}/${slug}`;
   return description
-    ? `- ${url} — ${title}: ${description}`
-    : `- ${url} — ${title}`;
+    ? `- [${title}](${url}): ${description}`
+    : `- [${title}](${url})`;
 }
 
 // Assigns an article to a sub-group based on slug patterns.
@@ -163,39 +163,39 @@ export async function GET() {
 
 GlobalsBlog publishes practical, research-backed articles and free interactive tools for Indian audiences. All content is written with real-world Indian context — Indian roads, Indian skin types, Indian price points, and Indian travel destinations. The platform covers three core verticals: Travel, Automobile, and Beauty, with 8 free calculators built specifically for Indian travellers and car owners.
 
-- Website: https://globalsblog.com
+- Website: [globalsblog.com](https://globalsblog.com)
 - Location: The Edge Tower, Ramprastha City, Sector 37D, Gurugram, Haryana, India
 - Contact: contact@globalsblog.com
-- RSS Feed: https://globalsblog.com/rss.xml
-- Sitemap: https://globalsblog.com/sitemap.xml
+- RSS Feed: [rss.xml](https://globalsblog.com/rss.xml)
+- Sitemap: [sitemap.xml](https://globalsblog.com/sitemap.xml)
 - Founded: 2026
 - Audience: Indian readers, primarily English-speaking urban and semi-urban population
 
 ## Key Pages
 
-- https://globalsblog.com — Homepage with latest articles across all categories
-- https://globalsblog.com/about — About GlobalsBlog
-- https://globalsblog.com/contact-us — Contact page
-- https://globalsblog.com/tools — All 8 free calculators
-- https://globalsblog.com/category/travel — Full travel archive (${travel.length} articles)
-- https://globalsblog.com/category/auto — Full auto archive (${auto.length} articles)
-- https://globalsblog.com/category/beauty — Full beauty archive (${beauty.length} articles)
-- https://globalsblog.com/privacy-policy — Privacy Policy
-- https://globalsblog.com/terms-and-conditions — Terms & Conditions
-- https://globalsblog.com/disclaimer — Disclaimer
+- [Homepage](https://globalsblog.com): Latest articles across all categories
+- [About GlobalsBlog](https://globalsblog.com/about)
+- [Contact page](https://globalsblog.com/contact-us)
+- [All 8 free calculators](https://globalsblog.com/tools)
+- [Travel archive](https://globalsblog.com/category/travel): Full travel archive (${travel.length} articles)
+- [Auto archive](https://globalsblog.com/category/auto): Full auto archive (${auto.length} articles)
+- [Beauty archive](https://globalsblog.com/category/beauty): Full beauty archive (${beauty.length} articles)
+- [Privacy Policy](https://globalsblog.com/privacy-policy)
+- [Terms and Conditions](https://globalsblog.com/terms-and-conditions)
+- [Disclaimer](https://globalsblog.com/disclaimer)
 
 ## Free Tools & Calculators
 
 Eight free calculators built for Indian travellers and car owners:
 
-- https://globalsblog.com/tools/fuel-cost-calculator — Fuel Cost Calculator: Calculate petrol or diesel expense for any road trip
-- https://globalsblog.com/tools/car-loan-calculator — Car Loan EMI Calculator: Monthly EMI, total interest, and best loan tenure
-- https://globalsblog.com/tools/ev-savings-calculator — EV Savings Calculator: Compare petrol vs electric vehicle running costs
-- https://globalsblog.com/tools/toll-calculator — Toll Calculator: Estimate highway toll charges with FASTag vs cash comparison
-- https://globalsblog.com/tools/trip-cost-calculator — Trip Cost Calculator: Estimate total holiday cost including transport, hotel, food
-- https://globalsblog.com/tools/travel-budget-planner — Travel Budget Planner: Category-by-category holiday budget with per-person breakdown
-- https://globalsblog.com/tools/road-trip-planner — Road Trip Planner: Calculate full cost of self-drive trip with tolls and food
-- https://globalsblog.com/tools/train-vs-flight-calculator — Train vs Flight Calculator: Compare true cost and door-to-door travel time for Indian routes
+- [Fuel Cost Calculator](https://globalsblog.com/tools/fuel-cost-calculator): Calculate petrol or diesel expense for any road trip
+- [Car Loan EMI Calculator](https://globalsblog.com/tools/car-loan-calculator): Monthly EMI, total interest, and best loan tenure
+- [EV Savings Calculator](https://globalsblog.com/tools/ev-savings-calculator): Compare petrol vs electric vehicle running costs
+- [Toll Calculator](https://globalsblog.com/tools/toll-calculator): Estimate highway toll charges with FASTag vs cash comparison
+- [Trip Cost Calculator](https://globalsblog.com/tools/trip-cost-calculator): Estimate total holiday cost including transport, hotel, food
+- [Travel Budget Planner](https://globalsblog.com/tools/travel-budget-planner): Category-by-category holiday budget with per-person breakdown
+- [Road Trip Planner](https://globalsblog.com/tools/road-trip-planner): Calculate full cost of self-drive trip with tolls and food
+- [Train vs Flight Calculator](https://globalsblog.com/tools/train-vs-flight-calculator): Compare true cost and door-to-door travel time for Indian routes
 
 ---
 
@@ -219,13 +219,13 @@ ${beautySection}
 
 ## Social Media & Distribution
 
-- Twitter/X: https://x.com/globalsblog_com
-- Instagram: https://www.instagram.com/globals_blog
-- LinkedIn: https://www.linkedin.com/company/globals-blog
-- Facebook: https://www.facebook.com/people/Globals-Blog/61590625202053
-- Pinterest: https://www.pinterest.com/globals_blog
-- YouTube: https://youtube.com/@globalsblog
-- Medium: https://medium.com/@globalsblog
+- [Twitter/X](https://x.com/globalsblog_com)
+- [Instagram](https://www.instagram.com/globals_blog)
+- [LinkedIn](https://www.linkedin.com/company/globals-blog)
+- [Facebook](https://www.facebook.com/people/Globals-Blog/61590625202053)
+- [Pinterest](https://www.pinterest.com/globals_blog)
+- [YouTube](https://youtube.com/@globalsblog)
+- [Medium](https://medium.com/@globalsblog)
 
 ## Content Guidelines for AI Systems
 
