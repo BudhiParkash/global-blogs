@@ -1,5 +1,5 @@
 ---
-import { createClient } from '@supabase/supabase-js';
+import { getPosts } from '../lib/api.js';
 
 interface Props {
   category: string;
@@ -25,24 +25,12 @@ const resolvedSub =
     ? 'In-depth car reviews, fuel efficiency tips, EV guides, and auto buying advice from GlobalsBlog.'
     : 'Destination guides, budget travel tips, road trip itineraries, and practical travel advice.');
 
-const supabase = createClient(
-  import.meta.env.SUPABASE_URL,
-  import.meta.env.SUPABASE_ANON_KEY
-);
-
-const { data: posts } = await supabase
-  .from('posts')
-  .select('slug, title, description, hero_image, published_at, categories!inner(name, slug)')
-  .eq('is_published', true)
-  .eq('categories.slug', category)
-  .order('published_at', { ascending: false })
-  .limit(3);
+const posts = await getPosts({ category, limit: 3 });
 
 const hasPosts = posts && posts.length > 0;
 
 const getUrl = (post: any) => {
-  const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-  const catSlug = (cat?.slug as string) || category;
+  const catSlug = (post.category?.slug as string) || category;
   return `/${catSlug}/${post.slug as string}`;
 };
 
@@ -75,9 +63,9 @@ const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
       {posts!.map((post: any) => (
         <article class="rp-card">
           <a href={getUrl(post)}>
-            {post.hero_image && (
+            {post.heroImage && (
               <img
-                src={post.hero_image as string}
+                src={post.heroImage as string}
                 alt={post.title as string}
                 width="600"
                 height="338"
@@ -89,9 +77,9 @@ const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
               <span class="rp-tag">{categoryLabel}</span>
               <h3>{post.title as string}</h3>
               {post.description && <p>{post.description as string}</p>}
-              {post.published_at && (
-                <time datetime={post.published_at as string}>
-                  {formatDate(post.published_at as string)}
+              {post.publishedAt && (
+                <time datetime={post.publishedAt as string}>
+                  {formatDate(post.publishedAt as string)}
                 </time>
               )}
             </div>

@@ -1,19 +1,9 @@
 import rss from '@astrojs/rss';
-import { createClient } from '@supabase/supabase-js';
+import { getPosts } from '../lib/api.js';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
 export async function GET(context) {
-  const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY
-  );
-
-  // 1. Fetch posts along with the category name
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('slug, title, description, hero_image, published_at, categories(name)')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
+  const posts = await getPosts();
 
   return rss({
     title: SITE_TITLE,
@@ -28,12 +18,11 @@ export async function GET(context) {
       media: 'http://search.yahoo.com/mrss/',
     },
 
-    items: (posts || []).map((post) => {
-      const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-      const categorySlug = categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+    items: posts.map((post) => {
+      const categorySlug = post.category?.slug || post.category?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
       const cleanPath = `/${categorySlug}/${post.slug}`.replace(/\/$/, "");
 
-      const imageUrl = post.hero_image || null;
+      const imageUrl = post.heroImage || null;
       let enclosure = '';
       if (imageUrl) {
         const ext = imageUrl.split('?')[0].split('.').pop()?.toLowerCase();
@@ -46,10 +35,10 @@ export async function GET(context) {
 
       return {
         title: post.title,
-        pubDate: new Date(post.published_at),
-        description: post.excerpt || post.description,
+        pubDate: new Date(post.publishedAt),
+        description: post.description,
         link: cleanPath,
-        categories: [categoryData?.name || 'General'],
+        categories: [post.category?.name || 'General'],
         customData: enclosure,
       };
     }),

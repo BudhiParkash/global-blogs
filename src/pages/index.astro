@@ -1,36 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import NewsletterSignup from '../components/NewsletterSignup.astro';
-import { createClient } from '@supabase/supabase-js';
+import { getPosts } from '../lib/api.js';
 import { SITE_CATEGORIES } from '../consts';
 
-const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY);
-
 // Step 1 — featured post (most recent, any category)
-const { data: featuredPost } = await supabase
-  .from('posts')
-  .select('slug, title, description, hero_image, published_at, categories(name)')
-  .eq('is_published', true)
-  .order('published_at', { ascending: false })
-  .limit(1)
-  .single();
+const [featuredPost] = await getPosts({ limit: 1 });
 
 // Step 2 — latest 3 per category, excluding the featured post
 const fetchCategory = (slug: string) =>
-  supabase
-    .from('posts')
-    .select('slug, title, description, hero_image, published_at, categories!inner(name, slug)')
-    .eq('is_published', true)
-    .eq('categories.slug', slug)
-    .neq('slug', featuredPost?.slug ?? '')
-    .order('published_at', { ascending: false })
-    .limit(3);
+  getPosts({ category: slug, excludeSlug: featuredPost?.slug ?? '', limit: 3 });
 
-const [
-  { data: travelPosts },
-  { data: autoPosts },
-  { data: beautyPosts },
-] = await Promise.all([
+const [travelPosts, autoPosts, beautyPosts] = await Promise.all([
   fetchCategory('travel'),
   fetchCategory('auto'),
   fetchCategory('beauty'),
@@ -45,7 +26,7 @@ const categorySections = [
     heading: 'Travel Guides, Budget Travel Tips & Destination Itineraries',
     description:
       'From solo travel hacks and honeymoon packages to budget destination guides and adventure itineraries — all in one focused archive.',
-    posts: travelPosts ?? [],
+    posts: travelPosts,
   },
   {
     slug: 'auto',
@@ -54,7 +35,7 @@ const categorySections = [
     heading: 'Car Reviews, Best Mileage Cars & Auto Buying Guides',
     description:
       'Discover the best mileage cars, read expert buying guides, compare SUVs, get fuel efficiency tips, and follow the latest auto industry news.',
-    posts: autoPosts ?? [],
+    posts: autoPosts,
   },
   {
     slug: 'beauty',
@@ -63,7 +44,7 @@ const categorySections = [
     heading: 'Skincare Routines, Makeup Tutorials & Beauty Tips',
     description:
       'Easy makeup tutorials, skincare routines for every skin type, ingredient guides for niacinamide, retinol, and vitamin C, and the latest beauty trends.',
-    posts: beautyPosts ?? [],
+    posts: beautyPosts,
   },
 ];
 
@@ -71,14 +52,13 @@ interface Post {
   slug: string;
   title: string;
   description?: string;
-  hero_image?: string;
-  published_at?: string;
-  categories: { name: string; slug?: string } | { name: string; slug?: string }[];
+  heroImage?: string;
+  publishedAt?: string;
+  category: { name: string; slug?: string } | null;
 }
 
 const getPostUrl = (post: Post) => {
-  const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-  const catSlug = cat?.slug || cat?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+  const catSlug = post.category?.slug || post.category?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
   return `/${catSlug}/${post.slug}`;
 };
 
@@ -140,21 +120,19 @@ const itemListItems = [
         <div class="featured-content">
           <p class="eyebrow">Featured story</p>
           <span class="story-tag">
-            {(Array.isArray(featuredPost.categories)
-              ? featuredPost.categories[0]
-              : featuredPost.categories)?.name ?? 'Latest'}
+            {featuredPost.category?.name ?? 'Latest'}
           </span>
           <h2>{featuredPost.title}</h2>
           <p>{featuredPost.description || ''}</p>
-          {featuredPost.published_at && (
-            <time class="card-date" datetime={featuredPost.published_at}>
-              {formatDate(featuredPost.published_at)}
+          {featuredPost.publishedAt && (
+            <time class="card-date" datetime={featuredPost.publishedAt}>
+              {formatDate(featuredPost.publishedAt)}
             </time>
           )}
         </div>
-        {featuredPost.hero_image && (
+        {featuredPost.heroImage && (
           <img
-            src={featuredPost.hero_image}
+            src={featuredPost.heroImage}
             alt={featuredPost.title}
             width="800"
             height="450"
@@ -269,14 +247,12 @@ const itemListItems = [
 
       {section.posts.length > 0 ? (
         <div class="cat-grid">
-          {section.posts.map((post) => {
-            const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-            return (
+          {section.posts.map((post) => (
               <article class="cat-card">
                 <a href={getPostUrl(post)}>
-                  {post.hero_image && (
+                  {post.heroImage && (
                     <img
-                      src={post.hero_image}
+                      src={post.heroImage}
                       alt={post.title}
                       width="600"
                       height="338"
@@ -285,19 +261,18 @@ const itemListItems = [
                     />
                   )}
                   <div class="cat-card-body">
-                    <span class="story-tag">{cat?.name ?? section.label}</span>
+                    <span class="story-tag">{post.category?.name ?? section.label}</span>
                     <h3>{post.title}</h3>
                     <p>{post.description || ''}</p>
-                    {post.published_at && (
-                      <time class="card-date" datetime={post.published_at}>
-                        {formatDate(post.published_at)}
+                    {post.publishedAt && (
+                      <time class="card-date" datetime={post.publishedAt}>
+                        {formatDate(post.publishedAt)}
                       </time>
                     )}
                   </div>
                 </a>
               </article>
-            );
-          })}
+          ))}
         </div>
       ) : (
         <div class="cat-empty">

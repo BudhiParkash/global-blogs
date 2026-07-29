@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { createClient } from '@supabase/supabase-js';
+import { getCategories, getPosts } from '../../lib/api.js';
 import { SITE_CATEGORIES } from '../../consts';
 
 // Per-category SEO metadata + keyword-rich content
@@ -64,14 +64,9 @@ const categoryMeta = {
 type CategoryKey = keyof typeof categoryMeta;
 
 export async function getStaticPaths() {
-  const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY
-  );
-
-  const { data: categories } = await supabase.from('categories').select('slug');
+  const categories = await getCategories();
   const defaultSlugs = SITE_CATEGORIES.map((item) => item.href.replace('/category/', ''));
-  const categorySlugs = [...new Set([...(categories?.map((c) => c.slug) ?? []), ...defaultSlugs])];
+  const categorySlugs = [...new Set([...categories.map((c: { slug: string }) => c.slug), ...defaultSlugs])];
 
   return categorySlugs.map((slug) => ({
     params: { category: slug },
@@ -80,19 +75,11 @@ export async function getStaticPaths() {
 }
 
 const { category } = Astro.params;
-const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY);
 
-const { data: posts } = await supabase
-  .from('posts')
-  .select('slug, title, description, hero_image, published_at, categories!inner(slug, name)')
-  .eq('is_published', true)
-  .eq('categories.slug', category)
-  .order('published_at', { ascending: false });
+const posts = await getPosts({ category });
 
 const categoryDisplayName =
-  (Array.isArray(posts?.[0]?.categories)
-    ? posts?.[0]?.categories[0]?.name
-    : (posts?.[0]?.categories as { name?: string } | undefined)?.name) ||
+  posts[0]?.category?.name ||
   category.replace(/-/g, ' ').replace(/\b\w/g, (char: string) => char.toUpperCase());
 
 const meta = categoryMeta[category as CategoryKey] ?? {
@@ -160,14 +147,13 @@ const formatDate = (iso?: string) =>
 
       <div class="posts-grid">
         {posts.map((post) => {
-          const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories as { name?: string; slug?: string };
-          const catSlug = cat?.slug || category;
+          const catSlug = post.category?.slug || category;
           return (
             <article class="post-card">
               <a href={`/${catSlug}/${post.slug}`}>
-                {post.hero_image && (
+                {post.heroImage && (
                   <img
-                    src={post.hero_image}
+                    src={post.heroImage}
                     alt={post.title}
                     width="600"
                     height="338"
@@ -175,12 +161,12 @@ const formatDate = (iso?: string) =>
                   />
                 )}
                 <div class="post-card-body">
-                  <span class="post-tag">{cat?.name ?? categoryDisplayName}</span>
+                  <span class="post-tag">{post.category?.name ?? categoryDisplayName}</span>
                   <h3>{post.title}</h3>
                   {post.description && <p>{post.description}</p>}
-                  {post.published_at && (
-                    <time class="post-date" datetime={post.published_at}>
-                      {formatDate(post.published_at)}
+                  {post.publishedAt && (
+                    <time class="post-date" datetime={post.publishedAt}>
+                      {formatDate(post.publishedAt)}
                     </time>
                   )}
                 </div>

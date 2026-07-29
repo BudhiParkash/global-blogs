@@ -1,16 +1,12 @@
 ---
 // Fix 13: email newsletter signup — email-only form, styled with existing card
 // design tokens. Used on the homepage (always visible) and article pages
-// (dismissible via localStorage). Emails are stored in the Supabase `subscribers`
-// table (insert-only RLS policy, so the public anon key can subscribe but never
-// read the list).
+// (dismissible via localStorage). Emails are stored via POST /api/subscribers
+// on the Node/MongoDB backend.
 interface Props {
   dismissible?: boolean;
 }
 const { dismissible = true } = Astro.props;
-
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 ---
 
 <section
@@ -30,8 +26,6 @@ const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
   <form
     class="newsletter-form"
     data-newsletter-form
-    data-supabase-url={supabaseUrl}
-    data-supabase-anon-key={supabaseAnonKey}
   >
     <label class="sr-only" for="newsletter-email">Email address</label>
     <input
@@ -153,7 +147,7 @@ const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 </style>
 
 <script>
-  import { createClient } from '@supabase/supabase-js';
+  const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:4000';
 
   // Dismissed state persists in localStorage so the card stays hidden on return visits.
   const DISMISS_KEY = 'globalsblog-newsletter-dismissed';
@@ -183,7 +177,7 @@ const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
         });
     }
 
-    // Save the email into the Supabase `subscribers` table (insert-only RLS)
+    // Save the email via the Node/MongoDB API's public subscribers endpoint
     const form = card.querySelector<HTMLFormElement>('[data-newsletter-form]');
     const note = card.querySelector<HTMLElement>('[data-newsletter-note]');
     const button = form?.querySelector('button');
@@ -192,21 +186,26 @@ const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const email = String(new FormData(form).get('email') || '').trim();
-      const url = form.dataset.supabaseUrl;
-      const key = form.dataset.supabaseAnonKey;
-      if (!email || !url || !key) return;
+      if (!email) return;
 
       button?.setAttribute('disabled', '');
       if (button) button.textContent = 'Subscribing…';
 
-      const supabase = createClient(url, key);
-      const { error } = await supabase.from('subscribers').insert({
-        email: email.toLowerCase(),
-        source: window.location.pathname,
-      });
+      let ok = false;
+      let alreadySubscribed = false;
+      try {
+        const res = await fetch(`${API_URL}/api/subscribers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.toLowerCase(), source: window.location.pathname }),
+        });
+        ok = res.ok;
+        if (ok) ({ alreadySubscribed = false } = await res.json());
+      } catch {
+        ok = false;
+      }
 
-      // 23505 = unique violation → this email is already subscribed; treat as success
-      if (error && error.code !== '23505') {
+      if (!ok) {
         button?.removeAttribute('disabled');
         if (button) button.textContent = 'Get weekly travel, auto & beauty tips';
         if (note) {
@@ -218,7 +217,7 @@ const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 
       form.setAttribute('hidden', '');
       if (note) {
-        note.textContent = error
+        note.textContent = alreadySubscribed
           ? "You're already subscribed — you're all set! ✓"
           : "You're in! Check your inbox for a welcome soon. ✓";
         note.style.color = '#40743f';

@@ -1,10 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { getPosts } from '../lib/api.js';
 
 const BASE = 'https://globalsblog.com';
 
 function getCatSlug(post) {
-  const cat = Array.isArray(post.categories) ? post.categories[0] : post.categories;
-  return cat?.slug || cat?.name?.toLowerCase().replace(/\s+/g, '-') || '';
+  return post.category?.slug || post.category?.name?.toLowerCase().replace(/\s+/g, '-') || '';
 }
 
 function formatLine(catSlug, slug, title, description) {
@@ -134,18 +133,7 @@ function renderGrouped(buckets, groups, catSlug) {
 }
 
 export async function GET() {
-  const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY
-  );
-
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('slug, title, description, categories(name, slug)')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
-
-  const all = posts || [];
+  const all = await getPosts();
 
   const travel = all.filter((p) => getCatSlug(p) === 'travel');
   const auto   = all.filter((p) => getCatSlug(p) === 'auto');

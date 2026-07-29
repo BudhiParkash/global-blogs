@@ -2,14 +2,9 @@
 // src/pages/[category]/[slug].astro
 import Layout from '../../layouts/Layout.astro';
 import NewsletterSignup from '../../components/NewsletterSignup.astro';
-import { createClient } from '@supabase/supabase-js';
+import { getPosts, getPostBySlug } from '../../lib/api.js';
 import { Image } from 'astro:assets';
 import '../../styles/blog-content.css';   // ← add this import
-
-const supabase = createClient(
-  import.meta.env.SUPABASE_URL,
-  import.meta.env.SUPABASE_ANON_KEY
-);
 
 function slugify(value = '') {
   return value
@@ -20,63 +15,32 @@ function slugify(value = '') {
 }
 
 export async function getStaticPaths() {
-  const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY
-  );
+  const posts = await getPosts();
 
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('slug, accent_color, categories(name)')
-    .eq('is_published', true);
-
-  return posts?.map((post) => {
-    const categoryData = Array.isArray(post.categories)
-      ? post.categories[0]
-      : post.categories;
-    const categoryParam =
-      categoryData?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+  return posts.map((post) => {
+    const categoryParam = post.category?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
 
     return {
       params: { category: categoryParam, slug: post.slug },
       props: { post },
     };
-  }) || [];
+  });
 }
 
 const { slug } = Astro.params;
 
-const { data: post } = await supabase
-  .from('posts')
-  .select(`
-    *,
-    author:author_id (
-      name,
-  bio,
-  bio_travel,
-  bio_auto,
-  bio_beauty,
-  avatar_url,
-  twitter_handle,
-  handle_link
-    ),
-    categories(name)
-  `)
-  .eq('slug', slug)
-  .single();
+const post = await getPostBySlug(slug);
 
 if (!post) return Astro.redirect('/404');
 
-const categoryName = post.categories?.name || 'Lifestyle';
+const categoryName = post.category?.name || 'Lifestyle';
 
-// accent_color column in Supabase — e.g. "red" | "blue" | "green" | "amber" | "teal" | "violet" | "orange" | "cyan"
+// accentColor — e.g. "red" | "blue" | "green" | "amber" | "teal" | "violet" | "orange" | "cyan"
 // Falls back to "blue" if not set
-const accentColor = post.accent_color || 'blue';
+const accentColor = post.accentColor || 'blue';
 const authorProfileUrl = post.author?.name
   ? `/authors/${slugify(post.author.name)}`
   : null;
-const clientSupabaseUrl = import.meta.env.SUPABASE_URL;
-const clientSupabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 
 const { category: categoryParam } = Astro.params;
 
@@ -107,35 +71,25 @@ const toolsDesc = categoryLower === 'travel'
   ? 'Estimate your trip costs, compare transport options, and build a complete travel budget with these free tools.'
   : 'Calculate fuel costs, compare petrol vs EV running costs, find the best car loan EMI, and estimate highway tolls.';
 
-const { data: relatedPosts } = await supabase
-  .from('posts')
-  .select('slug, title, hero_image, description, published_at, categories(name)')
-  .eq('is_published', true)
-  .neq('slug', slug)
-  .limit(10);
-
-const related = (relatedPosts ?? []).filter((p) => {
-  const cat = Array.isArray(p.categories) ? p.categories[0] : p.categories;
-  return cat?.name?.toLowerCase().replace(/\s+/g, '-') === categoryParam;
-}).slice(0, 10);
+const related = await getPosts({ category: categoryParam, excludeSlug: slug, limit: 10 });
 
 // "Read next": the next-older article in the same category (falls back to the
 // most recent one) — a descriptive-anchor internal link shown right where the
 // reader finishes the article, before they can bounce.
-const currentPublishedMs = post.published_at ? Date.parse(post.published_at) : 0;
+const currentPublishedMs = post.publishedAt ? Date.parse(post.publishedAt) : 0;
 const sortedRelated = related
-  .filter((p) => p.published_at)
-  .sort((a, b) => Date.parse(b.published_at!) - Date.parse(a.published_at!));
+  .filter((p) => p.publishedAt)
+  .sort((a, b) => Date.parse(b.publishedAt!) - Date.parse(a.publishedAt!));
 const nextPost =
-  sortedRelated.find((p) => Date.parse(p.published_at!) < currentPublishedMs) ||
+  sortedRelated.find((p) => Date.parse(p.publishedAt!) < currentPublishedMs) ||
   sortedRelated[0] ||
   related[0] ||
   null;
 
 // Fix 5: show a visible "Updated" line only when updated_at falls on a
 // different calendar day than published_at.
-const publishedDay = post.published_at ? new Date(post.published_at).toDateString() : null;
-const updatedDay = post.updated_at ? new Date(post.updated_at).toDateString() : null;
+const publishedDay = post.publishedAt ? new Date(post.publishedAt).toDateString() : null;
+const updatedDay = post.updatedAt ? new Date(post.updatedAt).toDateString() : null;
 const showUpdated = Boolean(publishedDay && updatedDay && publishedDay !== updatedDay);
 
 // Fix 6: canonical article URL used by the WhatsApp / X / copy-link buttons
@@ -147,7 +101,7 @@ const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${post.title
 const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(articleUrl)}`;
 
 // Fix 11: parse H2/H3 headings from the rendered content, inject anchor ids
-// (render-time transform only — the post.content stored in Supabase is untouched)
+// (render-time transform only — the post.content stored in MongoDB is untouched)
 // and build Table of Contents data. TOC renders only for 4+ H2 articles.
 interface TocItem {
   level: number;
@@ -185,11 +139,11 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
 <Layout
   title={`${post.title} | GlobalsBlog`}
   description={post.description ?? `Read ${post.title} on GlobalsBlog.`}
-  image={post.hero_image}
-  articleDate={post.published_at}
-  articleModified={post.updated_at ?? post.published_at}
+  image={post.heroImage}
+  articleDate={post.publishedAt}
+  articleModified={post.updatedAt ?? post.publishedAt}
   authorName={post.author?.name}
-  authorUrl={post.author?.handle_link}
+  authorUrl={post.author?.handleLink}
   category={categoryName}
   isArticle={true}
 >
@@ -199,26 +153,26 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
     </nav>
 
     <header class="article-header">
-      <span class="article-tag">{post.categories?.name ?? 'Story'}</span>
+      <span class="article-tag">{post.category?.name ?? 'Story'}</span>
       <h1>{post.title}</h1>
       <p class="article-meta">
-        {post.published_at && new Date(post.published_at).toLocaleDateString('en-US', {
+        {post.publishedAt && new Date(post.publishedAt).toLocaleDateString('en-US', {
           year: 'numeric', month: 'long', day: 'numeric',
         })}
       </p>
       <!-- Fix 5: visible freshness signal matching the dateModified in schema -->
       {showUpdated && (
         <p class="article-meta article-updated">
-          Updated: {new Date(post.updated_at).toLocaleDateString('en-US', {
+          Updated: {new Date(post.updatedAt).toLocaleDateString('en-US', {
             year: 'numeric', month: 'long', day: 'numeric',
           })}
         </p>
       )}
     </header>
 
-    {post.hero_image && (
+    {post.heroImage && (
       <Image
-        src={post.hero_image}
+        src={post.heroImage}
         width={1200}
         height={675}
         widths={[400, 1200]}
@@ -251,7 +205,7 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
 
     <!--
       data-accent drives the CSS variable --acc in blog-content.css
-      Value comes from the accent_color column in Supabase posts table
+      Value comes from the accentColor field on the post document
       data-pagefind-body scopes Pagefind search indexing to article content (Fix 12)
       contentWithAnchors = post.content with anchor ids injected on H2/H3 (Fix 11)
     -->
@@ -321,10 +275,7 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
       <form
         class="comment-form"
         id="comment-form"
-        data-post-id={post.id}
         data-post-slug={post.slug}
-        data-supabase-url={clientSupabaseUrl}
-        data-supabase-anon-key={clientSupabaseAnonKey}
       >
         <div class="comment-field-row">
           <label>
@@ -366,14 +317,14 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
           {authorProfileUrl ? (
             <a href={authorProfileUrl} aria-label={`View ${post.author.name} author profile`}>
               <img
-                src={post.author.avatar_url}
+                src={post.author.avatarUrl}
                 alt={post.author.name}
                 class="author-avatar"
               />
             </a>
           ) : (
             <img
-              src={post.author.avatar_url}
+              src={post.author.avatarUrl}
               alt={post.author.name}
               class="author-avatar"
             />
@@ -389,23 +340,23 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
             </h3>
             <p>
   {
-    categoryLower === 'travel' ? post.author.bio_travel :
-    categoryLower === 'auto' ? post.author.bio_auto :
-    categoryLower === 'beauty' ? post.author.bio_beauty :
+    categoryLower === 'travel' ? post.author.bioTravel :
+    categoryLower === 'auto' ? post.author.bioAuto :
+    categoryLower === 'beauty' ? post.author.bioBeauty :
     post.author.bio
   }
 </p>
             {authorProfileUrl && (
               <a href={authorProfileUrl} class="author-link">View author profile</a>
             )}
-            {post.author.handle_link && (
+            {post.author.handleLink && (
               <a
-                href={`${post.author.handle_link}`}
+                href={`${post.author.handleLink}`}
                 class="author-link external-author-link"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Follow on {post.author.twitter_handle || 'Social'}
+                Follow on {post.author.twitterHandle || 'Social'}
               </a>
             )}
           </div>
@@ -422,15 +373,14 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
         <h2 id="related-title">Related stories</h2>
         <div class="related-grid">
           {related.map((rp) => {
-            const rCat = Array.isArray(rp.categories) ? rp.categories[0] : rp.categories;
-            const rCatSlug = rCat?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
+            const rCatSlug = rp.category?.slug || rp.category?.name?.toLowerCase().replace(/\s+/g, '-') || 'blog';
             return (
               <a href={`/${rCatSlug}/${rp.slug}`} class="related-card">
-                {rp.hero_image && (
-                  <img src={rp.hero_image} alt={rp.title} width="400" height="250" loading="lazy" />
+                {rp.heroImage && (
+                  <img src={rp.heroImage} alt={rp.title} width="400" height="250" loading="lazy" />
                 )}
                 <div class="related-card-body">
-                  <span class="related-tag">{rCat?.name ?? categoryName}</span>
+                  <span class="related-tag">{rp.category?.name ?? categoryName}</span>
                   <h3>{rp.title}</h3>
                   <p>{ rp.description || ''}</p>
                 </div>
@@ -1024,8 +974,6 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
 	</style>
 
 <script>
-  import { createClient } from '@supabase/supabase-js';
-
   // Fix 11: TOC starts collapsed on mobile, open on desktop
   const toc = document.getElementById('article-toc');
   if (toc && window.matchMedia('(max-width: 768px)').matches) {
@@ -1058,18 +1006,17 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
   const errorMessage = document.getElementById('comment-error');
   const submitButton = commentForm?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 
+  const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:4000';
+
   commentForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const supabaseUrl = commentForm.dataset.supabaseUrl;
-    const supabaseAnonKey = commentForm.dataset.supabaseAnonKey;
     const formData = new FormData(commentForm);
     const name = String(formData.get('name') || '').trim();
     const email = String(formData.get('email') || '').trim();
     const comment = String(formData.get('comment') || '').trim();
-    const postId = Number(commentForm.dataset.postId);
 
-    if (!supabaseUrl || !supabaseAnonKey || !name || !comment) {
+    if (!name || !comment) {
       errorMessage?.removeAttribute('hidden');
       return;
     }
@@ -1078,20 +1025,27 @@ const showToc = tocItems.filter((h) => h.level === 2).length >= 4;
     submitButton?.setAttribute('disabled', '');
     if (submitButton) submitButton.textContent = 'Posting...';
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const { error } = await supabase.from('comments').insert({
-      post_id: Number.isNaN(postId) ? null : postId,
-      post_slug: commentForm.dataset.postSlug,
-      name,
-      email: email || null,
-      comment,
-      is_approved: false,
-    });
+    let ok = false;
+    try {
+      const res = await fetch(`${API_URL}/api/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postSlug: commentForm.dataset.postSlug,
+          name,
+          email: email || null,
+          comment,
+        }),
+      });
+      ok = res.ok;
+    } catch {
+      ok = false;
+    }
 
     submitButton?.removeAttribute('disabled');
     if (submitButton) submitButton.textContent = 'Post comment';
 
-    if (error) {
+    if (!ok) {
       errorMessage?.removeAttribute('hidden');
       return;
     }
